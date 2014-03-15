@@ -1,5 +1,4 @@
-class Test
-	def aa
+class Test11
 		put "aa"
 	end
 end
