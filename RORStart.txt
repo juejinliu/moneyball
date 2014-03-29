@@ -1,4 +1,0 @@
-class Test11
-		put "aa"
-	end
-end
