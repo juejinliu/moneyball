@@ -1,0 +1,45 @@
+{% load i18n %}
+{% load staticfiles %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!--[if lt IE 7 ]> <html lang="en" class="no-js ie6 lt8"> <![endif]-->
+<!--[if IE 7 ]>    <html lang="en" class="no-js ie7 lt8"> <![endif]-->
+<!--[if IE 8 ]>    <html lang="en" class="no-js ie8 lt8"> <![endif]-->
+<!--[if IE 9 ]>    <html lang="en" class="no-js ie9"> <![endif]-->
+<!--[if (gt IE 9)|!(IE)]><!--> <html lang="en" class="no-js"> <!--<![endif]-->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+	<head>
+	
+		<title>{% block title %}{% endblock %}MoneyBall</title>
+
+        <meta charset="UTF-8" />
+        <!-- <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">  -->
+        <title>P2P 网贷记账 财务管理</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+        <meta name="description" content="P2P 网贷管理 财务记账 集中管理你的财富" />
+        <meta name="keywords" content="P2P 网贷管理 财务记账 集中管理你的财富" />
+        <meta name="author" content="Moneyball" />
+		<link href="{% static "mainsite/templatemo_style.css" %}" type="text/css" rel="stylesheet" /> 
+    	<link rel="stylesheet" href="{% static "mainsite/table.css" %}">
+    	<link rel="stylesheet" href="{% static "mainsite/slimbox2.css" %}" type="text/css" media="screen" />
+		{% block extracss %}{% endblock %}
+	</head>
+<body style="margin: 0;	padding: 0;	color: #333;font-size: 12px;line-height: 1.6em;	font-family: sans-serif;background-color: #868686;	background-image:url({% static "images/templatemo_body.jpg" %});	background-position: top;background-repeat: repeat-x">
+<table border="0" cellpadding="2" cellspacing="2" align="center">
+    <tr>
+        <td height="30" colspan="2" width="1000">{% block menu %}{% endblock %}
+        </td>
+    </tr>
+    <tr>
+
+        <td width="1000">{% block body %}{% endblock %}</td>
+    </tr>
+    <tr>
+        <td height="30" colspan="2">{% block footer %}{% endblock %}
+        </td>
+    </tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,14 @@
+table.mytable { border-collapse: collapse; border: 1px solid #839E99; 
+background: #f1f8ee; font: .9em/1.2em Georgia, "Times New Roman", Times, serif; color: #033; }
+.mytable caption { font-size: 1.3em; font-weight: bold; text-align: left; padding: 1em 4px; }
+.mytable td, th { padding: 3px 3px .75em 3px; line-height: 1.3em; }
+.mytable th { background: #839E99; color: #fff; font-weight: bold; text-align: left; padding-right: .5em; vertical-align: top; }
+.mytable thead th { background: #2C5755; text-align: center; }
+.mytable .odd td { background: #DBE6DD; }
+.mytable .odd th { background: #6E8D88; }
+.mytable td a, td a:link { color: #325C91; }
+.mytable td a:visited { color: #466C8E; }
+.mytable td a:hover, td a:focus { color: #1E4C94; }
+.mytable th a, td a:active { color: #fff; }
+.mytable tfoot th, tfoot td { background: #2C5755; color: #fff; }
+.mytable th + td { padding-left: .5em; }	

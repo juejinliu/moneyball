@@ -1,0 +1,24 @@
+{% extends "basic_template.html" %}
+{% load i18n %}
+{% load staticfiles %}
+{% block pagetitle %}微信{% endblock %}
+
+{% block extrajs %}
+
+{% endblock %}
+
+{% block body %}
+{% endblock %}
+
+{% block nav %}
+				<ul>
+					<li class="home first"><a href=""><span></span>待收 </a></li>
+					<li class="accounts">
+						<a href=""><span> </span>录入一笔</a>
+					</li>
+					<li class="accounts"><a href=""><span></span>借出明细</a></li>
+					<li class="accounts"><a href=""><span></span>待收明细</a></li>
+					<li class="accounts"><a href=""><span></span>平台定义</a></li>
+					<li class="tags end"><a href=""><span></span></a></li>
+				</ul>
+{% endblock nav %}
