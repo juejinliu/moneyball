@@ -4,11 +4,11 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    (r'^$', 'moneyball.global.views.index'),
-    (r'^login/$', 'moneyball.global.views.login'),
-    (r'^logout/$', 'moneyball.global.views.logout'),
-    (r'^welcome/$', 'moneyball.global.views.welcome'),
-    (r'^wxfocus/$', 'moneyball.global.views.wxfocus'),
+    (r'^$', 'moneyball.common.views.index'),
+    (r'^login/$', 'moneyball.common.views.login'),
+    (r'^logout/$', 'moneyball.common.views.logout'),
+    (r'^welcome/$', 'moneyball.common.views.welcome'),
+    (r'^wxfocus/$', 'moneyball.common.views.wxfocus'),
     (r'^user/', include('moneyball.user.urls')),
     (r'^loan/', include('moneyball.loan.urls')),
     #(r'^accounts/', include('moneyball.accounts.urls')),

@@ -27,7 +27,7 @@ class Loan(models.Model):
     duration = models.IntegerField(default=1)    #借出时长,默认是月数
     loantype = models.IntegerField(default=0)    #是否秒标 0-本人投标 1-下线投标
     delegaterate = models.DecimalField(decimal_places=2,max_digits=5,default=0.00)  #代理人佣金费率
-    loaddate = models.DateTimeField(auto_now_add=True)
+    loandate = models.DateTimeField(auto_now_add=False)
     returntype = models.IntegerField(default=1)    #'1':'等额本息','2':'月还息到期还本','3':'到期还本息'
     status = models.IntegerField(default=0)    #0-正在还款1-已还款2-已坏账,未赔付3-坏账已赔付
     awardamt = models.DecimalField(decimal_places=2,max_digits=9,default=0.00)
