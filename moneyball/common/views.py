@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- 
 from django.shortcuts import render,render_to_response
 from django.http import HttpResponse
 from django.contrib import auth
@@ -33,6 +34,6 @@ def login(request):
             return render_to_response("welcome.html", RequestContext(request))
         else:
             # Show an error page
-            return render_to_response("login.html")
+            return render_to_response("login.html",({'errormsg':u'用户名或密码错误'}), RequestContext(request))
     else:
-        return render_to_response("login.html")
+        return render_to_response("login.html", RequestContext(request))
