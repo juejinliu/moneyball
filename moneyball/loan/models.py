@@ -36,33 +36,11 @@ class Loan(models.Model):
     feeamt = models.DecimalField(decimal_places=2,max_digits=9,default=0.00)
     offlineamt = models.DecimalField(decimal_places=2,max_digits=9,default=0.00)
     returndate = models.DateField()
-    comments = models.CharField(max_length=300)
+    comments = models.CharField(blank=True,null=True,max_length=300)
             
     def __unicode__(self):
         return self.name
     
-    def insert_detail(self):
-        """
-        split loan record to detail records
-        
-        Arguments:
-        """
-        if (self.insratetype == 0):     #年利率
-            insrate = self.insrate;
-        elif (self.insratetype == 1):   #月利率
-            insrate = self.insamt * 12
-        else:    #日利率
-            insrate = self.insamt * 365
-        
-        if (self.daily == 0):           #月标
-            if self.returntype == 0:    #等额本金
-                for i in range(0,self.duration):
-                    loandtl = Loandetail
-                    loandtl.loan = self
-                    loandtl.platform = self.platform
-                    loandtl.period = i
-                    loandtl.totalperiod = self.duration
-                    loandtl.save()
                     
 class Loandetail(models.Model):
     loan = models.ForeignKey(Loan)
@@ -74,11 +52,11 @@ class Loandetail(models.Model):
     ownamt = models.DecimalField(decimal_places=2,max_digits=9,default=0.00)
     feeamt = models.DecimalField(decimal_places=2,max_digits=9,default=0.00)
     insrate = models.DecimalField(decimal_places=2,max_digits=5,default=0.00)
-    loaddate = models.DateTimeField(auto_now_add=True)
-    expiredate = models.DateTimeField(auto_now_add=True)
+    loandate = models.DateTimeField(auto_now_add=False)
+    expiredate = models.DateTimeField(auto_now_add=False)
     status = models.IntegerField(default=0)    #0-正在还款1-已还款2-已坏账,未赔付3-坏账已赔付
-    returndate = models.DateField()             #回款日期
+    returndate = models.DateField(blank=True,null=True)             #回款日期
     latecharge = models.DecimalField(decimal_places=2,max_digits=9,default=0.00)
-    comments = models.CharField(max_length=300)
+    comments = models.CharField(blank=True,null=True,max_length=300)
     def __unicode__(self):
         return self.name

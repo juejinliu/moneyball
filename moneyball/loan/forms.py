@@ -64,9 +64,90 @@ class LoanForm(forms.Form):
         if la.daily == '1' and la.seconds == 0:
             la.insamt = la.amount * la.duration / 365 * insrate / 100
         return la.insamt
+    #插入待收明细
+    def insert_detail(self, instance=None):
+        """
+        split loan record to detail records
         
-            
+        Arguments:
+        """
+        if instance is None:
+            la = Loan()
+        elif isinstance(instance, Loan):
+            la = instance
+        else:
+            raise TypeError("instance is not a LoanDetail")
         
+        if (la.insratetype == '0'):     #年利率
+            insrate = la.insrate;
+        elif (la.insratetype == '1'):   #月利率
+            insrate = la.insamt * 12
+        else:    #日利率
+            insrate = la.insamt * 365
+        
+        loandtl = Loandetail()
+        loandtl.loan = la
+        loandtl.user = la.user
+        loandtl.platform = la.platform
+        loandtl.totalperiod = la.duration
+        loandtl.status = 0
+        loandtl.insrate = la.insrate
+        loandtl.loandate = la.loandate
+        if (la.daily == '0'):           #月标
+            if la.returntype == '0':    #等额本金
+                remainAmt = la.amount
+                divAmt = la.amount / la.duration
+                for i in range(0,la.duration):
+                    loandtl.period = i+1
+                    loandtl.insamt = remainAmt * insrate / 1200
+                    loandtl.ownamt = divamt
+                    loandtl.feeamt = loandtl.insamt * la.feerate / 100
+                    loandtl.expiredate = addmonths(la.loandate,1+1,False)
+                    remainAmt -= divAmt
+                    loandtl.save(force_insert=True)
+                    loandtl.id=None
+            if la.returntype == '1':    #等额本息
+                monthactive = insrate / 1200
+                totalmoney = la.amount
+                totalmonth = la.duration
+                monthmoney = totalmoney*monthactive*(pow((1+monthactive),totalmonth))/(pow((1+monthactive),totalmonth)-1)   #每月还款额
+                for i in range(0,la.duration):
+                    monthinterestmoney = totalmoney*monthactive*(pow((1+monthactive),totalmonth)-pow((1+monthactive),i))/(pow((1+monthactive),totalmonth)-1)    #每月利息额
+                    principalmoney = monthmoney-monthinterestmoney  #每月本金
+                    loandtl.ownamt = principalmoney
+                    loandtl.period = i+1
+                    loandtl.insamt = monthinterestmoney
+                    loandtl.feeamt = monthinterestmoney * la.feerate / 100
+                    loandtl.expiredate = addmonths(la.loandate,i+1,False)
+                    loandtl.save(force_insert=True)
+                    loandtl.id=None
+            if la.returntype == '2':    #月还息到期还本
+                loandtl.insamt = la.amount * insrate / 1200
+                loandtl.feeamt = loandtl.insamt * la.feerate / 100
+                for i in range(0,la.duration):
+                    loandtl.period = i+1
+                    loandtl.expiredate = addmonths(la.loandate,i+1,False)
+                    if i == la.duration - 1:
+                        loandtl.ownamt = la.amount
+                    else:
+                        loandtl.ownamt = 0
+                    loandtl.save(force_insert=True)
+                    loandtl.id=None
+            if la.returntype == '3':
+                loandtl.insamt = la.amount * la.duration * insrate / 1200
+                loandtl.feeamt = loandtl.insamt * la.feerate / 100
+                loandtl.period = 1
+                loandtl.ownamt = la.amount
+                loandtl.expiredate = addmonths(la.loandate,la.duration,False)
+                loandtl.save(force_insert=True)
+        if la.daily == '1':      #天标--仅支持到期还本息
+            loandtl.insamt = la.amount * la.duration /360 * insrate /100;  #计算总共的利息
+            loandtl.feeamt = loandtl.insamt * la.feerate / 100
+            loandtl.period = 1
+            loandtl.ownamt = la.amount
+            loandtl.expiredate = la.loandate + datetime.timedelta(days=la.duration)
+            loandtl.save(force_insert=True)
+    ##############################################
     def save(self, instance=None):
         # Check the instance we've been given (if any)
         if instance is None:
@@ -101,6 +182,8 @@ class LoanForm(forms.Form):
         elif la.daily == '1': #天标
             la.returndate = datetime.datetime.now() + datetime.timedelta(days = la.duration)
         la.save()
+        #####################插入明细
+        self.insert_detail(la)
         return la
 
 

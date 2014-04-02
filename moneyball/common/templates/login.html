@@ -68,15 +68,15 @@
                         </div>
 
                         <div id="register" class="animate form">
-                            <form  action="/iforgot" method="post" autocomplete="on"> 
+                            <form  action="/user/iforgot/" method="post" autocomplete="on"> 
                                 <h1> iForgot </h1> 
                                 <p> 
                                     <label for="username" class="uname" data-icon="u" >您的登录名称 </label>
-                                    <input id="username" name="login.login_name" required="required" type="text" placeholder="重置密码用"/>
+                                    <input id="username" name="username" required="required" type="text" placeholder="重置密码用"/>
                                 </p>
                                 <p>
                                     <label for="emailsignup" class="youmail" data-icon="e" >您注册的电子邮件</label>
-                                    <input id="emailsignup" name="login.email" required="required" type="email" placeholder="接收重置密码链接"/> 
+                                    <input id="emailsignup" name="email" required="required" type="email" placeholder="接收重置密码链接"/> 
                                     <label style="font: italic;font-size: 8px" >如果您无法收到email请通过微信联系站长帮助解决</label>	
                                 </p>
 								<div class="errormsg">

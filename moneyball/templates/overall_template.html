@@ -1,4 +1,6 @@
 {% extends "basic_template.html" %}
+{% load pagination_tags %}
+{% autopaginate object_list 20%}
 {% load staticfiles %}
 {% load i18n %}
 {% load cache %}
@@ -12,8 +14,8 @@
 
 {% if user.is_authenticated %}  
 	<strong>{{ user.username }}</strong>
-	<a href="/updatepersonal" >修改个人信息</a>
-	<a href="/modifypass" >修改密码</a>
+	<a href="/user/profile" >修改个人信息</a>
+	<a href="/user/passwordset" >修改密码</a>
 	<a href="/logout" >退出</a>
 {% else %}
 	 请<a href="/login" >登录</a>

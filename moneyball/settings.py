@@ -42,7 +42,9 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'pagination',
     'moneyball.common',
+    'moneyball.common.templatetags',
     'moneyball.user',
     'moneyball.loan',
 )
@@ -55,6 +57,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'pagination.middleware.PaginationMiddleware',
 )
 
 # Context processors
@@ -66,6 +69,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.static",
     "django.core.context_processors.tz",
     'django.contrib.messages.context_processors.messages',
+    'django.core.context_processors.request',
 )
 
 ROOT_URLCONF = 'moneyball.urls'
