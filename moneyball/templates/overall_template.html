@@ -1,5 +1,6 @@
 {% extends "basic_template.html" %}
 {% load pagination_tags %}
+{% load poll_extras %}
 {% autopaginate object_list 20%}
 {% load staticfiles %}
 {% load i18n %}
@@ -22,7 +23,7 @@
 {% endif %}
 
 <div id="templatemo_header">
-    <div id="site_title"><a style="display: block; width: 780px; background: #717171; padding-left: 20px" href="" rel="nofollow">Money Ball</a></div>
+    <div id="site_title"><a style="display: block; width: 950px; background: #717171; padding-left: 20px" href="" rel="nofollow">Money Ball</a></div>
 </div>
 
 	<style type='text/css'>
@@ -57,7 +58,7 @@
 					<li class='P9CCMBg'></li>
 
 					<li class='P9CCMNav'>
-						<a href='view_welcome?page=1' >首页</a>
+						<a href='/welcome' >首页</a>
 						<em>HOME</em>
 					</li>
 					<li class='P9CCMNav'>
@@ -83,8 +84,8 @@
 					<a href='/loan/loansummary'>显示汇总</a>
 					<a href='/loan/add' >录入一笔</a>
 					<a href='/loan/platform'>平台管理</a>
-					<a href='/loan/loanlist'>借出明细</a>
-					<a href='/loan/loandetaillist'>待收明细</a>
+					<a href='/loan/loanlist/?status=1'>借出明细</a>
+					<a href='/loan/loandetaillist/?status=1'>待收明细</a>
 				</li>
 				<li class='P9CCNav'>
 					<a href=''>账单录入</a>

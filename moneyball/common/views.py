@@ -7,15 +7,24 @@ from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required
 from django.template import RequestContext
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from moneyball.loan.models import Loandetail
+from moneyball.loan.models import *
+from django.db.models import Sum
 # Create your views here.
 def index(request):
     return render_to_response('index.html')
 
 @login_required
 def welcome(request):
-    today_due_list = Loandetail.objects.all()
-    return render_to_response('welcome.html', {"today_due_list": today_due_list}, RequestContext(request))
+    tempstatus = Returnstatus.objects.get(status = 0)
+    today_due_list = Loandetail.objects.filter(user=request.user,status=tempstatus).order_by('expiredate')
+    amount_sum = 0.00
+    if today_due_list and today_due_list.count > 0:
+        amount_sum = today_due_list.aggregate(Sum('ownamt'))['ownamt__sum']
+        amount_sum += today_due_list.aggregate(Sum('insamt'))['insamt__sum']
+        amount_sum -= today_due_list.aggregate(Sum('feeamt'))['feeamt__sum']
+    return render_to_response('welcome.html', {"today_due_list": today_due_list,
+                                               "record_number": today_due_list.count,
+                                               "amount_sum":amount_sum,}, RequestContext(request))
 
 def wxfocus(request):
     return render_to_response('overall_template.html')

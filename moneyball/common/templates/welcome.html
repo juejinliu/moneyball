@@ -37,42 +37,51 @@
 				</div>
            </div>
            <div class="photo_box">
-            	<a href="loan_list?page=1" title="借出明细" ><img src="{% static "images/welcome_2.png" %}" alt="loan_record" /></a>
+            	<a href="/loan/loanlist" title="借出明细" ><img src="{% static "images/welcome_2.png" %}" alt="loan_record" /></a>
            </div>
 			<div class="text_box box3 no_margin_right">
             	<div class="box_content">
                 	<span class="gallery"></span>
-                    <a href="loan_detail_list?page=1" class="menu_title">待收明细</a>
+                    <a href="/loan/loandetaillist" class="menu_title">待收明细</a>
                     <div class="h10"></div>
                      	显示目前待收明细记录.
-					<a href="loan_detail_list?page=1" class="more_btn">待收</a>
+					<a href="/loan/loandetaillist" class="more_btn">待收</a>
 				</div>
+           </div>
+           <div class="photo_box">
+            	<a href="/loan/loanlist" title="借出明细" ><img src="{% static "images/welcome_2.png" %}" alt="loan_record" /></a>
            </div>
         </div>
 	<div id="home" class="section_due_today">
-    	<table id="mytable">
-    		<tr><td colspan=8>今日待收：</td></tr>
-    		<tr>
-	    		<th width=100 bgcolor="#87CEFA">序号</th>
-	    		<th width=100 bgcolor="#87CEFA">平台</th>
-	    		<th width=100 bgcolor="#87CEFA">总额</th>
-	    		<th width=100 bgcolor="#87CEFA">本金</th>
-	    		<th width=100 bgcolor="#87CEFA">收益</th>
-	    		<th width=100 bgcolor="#87CEFA">期数</th>
-	    		<th width=100 bgcolor="#87CEFA">收款日</th>
-	    		<th width=100 bgcolor="#87CEFA">操作</th>
-			</tr>    	
+    	<table class="mytable">
  		{% autopaginate today_due_list 10%}
+    		<tr><td colspan=8>今日待收：<a id="titlenum">{{ record_number }}</a> 笔, 总金额：<a id="titlenum">{{amount_sum}}</a></td></tr>
+    		<tr>
+	    		<th width=100 >序号</th>
+	    		<th width=100 >平台</th>
+	    		<th width=100 >总额</th>
+	    		<th width=100 >本金</th>
+	    		<th width=100 >收益</th>
+	    		<th width=100 >利息</th>
+	    		<th width=100 >费用</th>
+	    		<th width=100 >期数</th>
+	    		<th width=100 >收款日</th>
+	    		<th width=100 >操作</th>
+			</tr>
+			
   			{% for data in today_due_list %}
   				<tr>
-     			<td>1</td>
+     			<td>{{ request.page|minus:1|times:10|add:forloop.counter }}</td>
 		     	<td>{{ data.platform.name }}</td>                   
      			<td>{{ data.ownamt|add:data.insamt|subtract:data.feeamt }}</td>
      			<td>{{ data.ownamt }}</td>
      			<td>{{ data.insamt|subtract:data.feeamt }}</td>
+     			<td>{{ data.insamt }}</td>
+     			<td>{{ data.feeamt }}</td>
      			<td>{{ data.period }}/{{data.totalperiod}}</td>
      			<td>{{ data.expiredate|date:"SHORT_DATE_FORMAT" }}</td>
-     			<td>还款</td>
+     			<td><a href="/loan/loan_detail_return?Loan_detail_id={{ data.id }}">回款</a>
+     				<a href="/loan/loan_detail_bad?Loan_detail_id={{ data.id }}"/>坏账</a></</td>
      			</tr>
   			{% endfor %}
   		</table>

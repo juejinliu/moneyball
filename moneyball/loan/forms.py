@@ -5,13 +5,16 @@ from moneyball.common.utilfun import addmonths
 from moneyball.common import widgets
 from django.forms.extras.widgets import SelectDateWidget
 from moneyball.loan.models import *
-import math
+import math,decimal
+from django.db.models import Q
+from simple_search import BaseSearchForm
+ 
 class LoanForm(forms.Form):
     loandate = forms.DateField(label=u'日期', initial=datetime.date.today(), widget=SelectDateWidget())
     platform = forms.ModelChoiceField(label=u'平台',queryset=None)
     amount = forms.DecimalField(label=u'金额', initial='0')
-    RETURNCHOICES = (('1', u'等额本息',),('2', u'月还息到期还本',), ('3', '到期还本息',))     #'1':'等额本息','2':'月还息到期还本','3':'到期还本息'
-    returntype = forms.ChoiceField(label=u'还款方式', choices=RETURNCHOICES)
+    #RETURNCHOICES = (('1', u'等额本息',),('2', u'月还息到期还本',), ('3', '到期还本息',))     #'1':'等额本息','2':'月还息到期还本','3':'到期还本息'
+    returntype = forms.ModelChoiceField(label=u'还款方式',queryset=None)
     duration = forms.IntegerField(label=u'借款期限', initial='1')
     DURATIONCHOICES = (('0', u'月',),('1', u'天',))     #
     daily = forms.ChoiceField(label=u'', initial='0', widget=forms.RadioSelect, choices=DURATIONCHOICES)
@@ -29,6 +32,7 @@ class LoanForm(forms.Form):
         self.user = user
         super(LoanForm, self).__init__(*args, **kwargs)
         self.fields['platform'].queryset = Platform.objects.filter(user=self.user).order_by('name')
+        self.fields['returntype'].queryset = Returntype.objects.all().order_by('type')
     
     def calinsamt(self, instance=None):
         if instance is None:
@@ -45,13 +49,13 @@ class LoanForm(forms.Form):
             insrate = la.insrate * 365  #日利率
         
         if la.daily == '0' and la.seconds == 0:
-            if la.returntype == '0':    #等额本金
+            if la.returntype.type == 0:    #等额本金
                 divAmt = la.amount / la.duration
                 remainAmt = la.amount
                 for i in range(0,la.duration):
                     la.insamt += remainAmt * insrate / 1200
                     remainAmt -= divAmt
-            elif la.returntype == '1':  #等额本息
+            elif la.returntype.type == 1:  #等额本息
                 monthactive = insrate / 1200
                 totalmoney = la.amount
                 totalmonth = la.duration
@@ -59,7 +63,7 @@ class LoanForm(forms.Form):
                 for i in range(0,totalmonth):
                     monthinterestmoney = totalmoney * monthactive * (pow((1+monthactive),totalmonth)-pow((1+monthactive),i))/(pow((1+monthactive),totalmonth)-1);
                     la.insamt += monthinterestmoney;
-            elif la.returntype == '2' or la.returntype == '3':
+            elif la.returntype.type == 2 or la.returntype.type == 3:
                 la.insamt = la.amount * la.duration / 12 * insrate / 100
         if la.daily == '1' and la.seconds == 0:
             la.insamt = la.amount * la.duration / 365 * insrate / 100
@@ -90,11 +94,11 @@ class LoanForm(forms.Form):
         loandtl.user = la.user
         loandtl.platform = la.platform
         loandtl.totalperiod = la.duration
-        loandtl.status = 0
+        loandtl.status = la.status
         loandtl.insrate = la.insrate
         loandtl.loandate = la.loandate
         if (la.daily == '0'):           #月标
-            if la.returntype == '0':    #等额本金
+            if la.returntype.type == 0:    #等额本金
                 remainAmt = la.amount
                 divAmt = la.amount / la.duration
                 for i in range(0,la.duration):
@@ -106,7 +110,7 @@ class LoanForm(forms.Form):
                     remainAmt -= divAmt
                     loandtl.save(force_insert=True)
                     loandtl.id=None
-            if la.returntype == '1':    #等额本息
+            if la.returntype.type == 1:    #等额本息
                 monthactive = insrate / 1200
                 totalmoney = la.amount
                 totalmonth = la.duration
@@ -121,7 +125,7 @@ class LoanForm(forms.Form):
                     loandtl.expiredate = addmonths(la.loandate,i+1,False)
                     loandtl.save(force_insert=True)
                     loandtl.id=None
-            if la.returntype == '2':    #月还息到期还本
+            if la.returntype.type == 2:    #月还息到期还本
                 loandtl.insamt = la.amount * insrate / 1200
                 loandtl.feeamt = loandtl.insamt * la.feerate / 100
                 for i in range(0,la.duration):
@@ -133,7 +137,7 @@ class LoanForm(forms.Form):
                         loandtl.ownamt = 0
                     loandtl.save(force_insert=True)
                     loandtl.id=None
-            if la.returntype == '3':
+            if la.returntype.type == 3:
                 loandtl.insamt = la.amount * la.duration * insrate / 1200
                 loandtl.feeamt = loandtl.insamt * la.feerate / 100
                 loandtl.period = 1
@@ -171,11 +175,12 @@ class LoanForm(forms.Form):
         la.offlinerate = self.cleaned_data['offlinerate']
         la.comments = self.cleaned_data['comments']
         ######################计算数据
-        la.status = 0
+        tmpstatus = Returnstatus.objects.get(status = 0)
+        la.status = tmpstatus
         la.awardamt = la.amount * la.awardrate / 100
         la.insamt = self.calinsamt(la)
         la.continuedamt = la.amount * la.continuerate / 100
-        la.feeamt = la.insamt * la.feerate / 100
+        la.feeamt = decimal.Decimal(la.insamt) * decimal.Decimal(la.feerate) / 100
         la.offlineamt = la.amount * la.offlinerate / 100
         if la.daily == '0':   #月标
             la.returndate = addmonths(la.loandate,la.duration,False)
@@ -189,14 +194,24 @@ class LoanForm(forms.Form):
 
 class PlatformForm(forms.Form):
     name = forms.CharField(label=u'名称(必填)', max_length=50)
-    platfromurl = forms.URLField(label=u'网址', required=False,initial='http://')
+    platformurl = forms.URLField(label=u'网址', required=False,initial='http://')
     rate = forms.DecimalField(label=u'管理费率', initial='0.00')
     delegaterate = forms.DecimalField(label=u'代理人费率', initial='0.00')
-    onlinetime = forms.DateField(label=u'上线日期', initial=datetime.date.today(), widget=SelectDateWidget())
-    active = forms.ChoiceField(label=u'状态', widget=forms.RadioSelect, choices=[(1, u'正常'), (0, u'隐藏')], initial='1')
+    onlinetime = forms.DateField(label=u'上线日期', required=False, initial=datetime.date.today(), widget=SelectDateWidget())
+    active = forms.ModelChoiceField(label=u'状态', widget=forms.RadioSelect,queryset=Booleancode.objects.all().order_by('-code'),initial=2)
     error_css_class = 'error'
     required_css_class = 'required'
-    def save(self, request , instance=None):
+    def __init__(self, data, *args, **kwargs):
+        super(PlatformForm, self).__init__(*args, **kwargs)
+        if data:
+            if isinstance(data, Platform):
+                self.fields['name'].initial = data.name
+                self.fields['platformurl'].initial = data.platformurl
+                self.fields['rate'].initial = data.rate
+                self.fields['delegaterate'].initial = data.delegaterate
+                self.fields['onlinetime'].initial = data.onlinetime
+                self.fields['active'].initial = data.active
+    def save(self, request , instance=None, id=None):
         # Check the instance we've been given (if any)
         if instance is None:
             pf = Platform()
@@ -204,12 +219,69 @@ class PlatformForm(forms.Form):
             pf = instance
         else:
             raise TypeError("instance is not a Platform")
+        pf.id = id
         pf.user = request.user
         pf.name = self.cleaned_data['name']
-        pf.platfromurl = self.cleaned_data['platfromurl']
+        pf.platformurl = self.cleaned_data['platformurl']
         pf.rate = self.cleaned_data['rate']
         pf.delegaterate = self.cleaned_data['delegaterate']
         pf.onlinetime = self.cleaned_data['onlinetime']
         pf.active = self.cleaned_data['active']
         pf.save()
         return pf
+
+
+class LoanSearchForm(BaseSearchForm):
+    class Meta:
+        base_qs = Loan.objects
+#         search_fields = ('^name', 'description', 'specifications', '=id')
+    
+    platform = forms.ModelChoiceField(label=u'平台',queryset=None,required = False)
+    start_date = forms.DateField(label=u'开始日期',required = False, widget=SelectDateWidget(),input_formats = ('%Y-%m-%d',),)
+    end_date = forms.DateField(label=u'结束日期',required = False, widget=SelectDateWidget(),input_formats = ('%Y-%m-%d',),)
+    status = forms.ModelChoiceField(label=u'状态',queryset=None,required = False)
+    def prepare_start_date(self):
+        if self.cleaned_data['start_date']:
+            return Q(loandate__gte=self.cleaned_data['start_date'])
+        else:
+            return ""
+    def prepare_end_date(self):
+        if self.cleaned_data['end_date']:
+            return Q(loandate__lte=self.cleaned_data['end_date'])
+        else:
+            return ""
+    error_css_class = 'error'
+    required_css_class = 'required'
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super(BaseSearchForm, self).__init__(*args, **kwargs)
+        self.fields['platform'].queryset = Platform.objects.filter(user=self.user).order_by('name')
+        self.fields['status'].queryset = Returnstatus.objects.all().order_by('status')
+
+class LoanDtlSearchForm(BaseSearchForm):
+    class Meta:
+        base_qs = Loandetail.objects
+#         search_fields = ('^name', 'description', 'specifications', '=id')
+    
+    platform = forms.ModelChoiceField(label=u'平台',queryset=None,required = False)
+    start_date = forms.DateField(label=u'开始日期',required = False, widget=SelectDateWidget(),input_formats = ('%Y-%m-%d',),)
+    end_date = forms.DateField(label=u'结束日期',required = False, widget=SelectDateWidget(),input_formats = ('%Y-%m-%d',),)
+    status = forms.ModelChoiceField(label=u'状态',queryset=None,required = False,initial='0')
+    def prepare_start_date(self):
+        if self.cleaned_data['start_date']:
+            return Q(expiredate__gte=self.cleaned_data['start_date'])
+        else:
+            return ""
+    def prepare_end_date(self):
+        if self.cleaned_data['end_date']:
+            return Q(expiredate__lte=self.cleaned_data['end_date'])
+        else:
+            return ""
+    error_css_class = 'error'
+    required_css_class = 'required'
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super(BaseSearchForm, self).__init__(*args, **kwargs)
+        self.fields['platform'].queryset = Platform.objects.filter(user=self.user).order_by('name')
+        self.fields['status'].queryset = Returnstatus.objects.all().order_by('status')
+

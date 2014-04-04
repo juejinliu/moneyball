@@ -1,0 +1,202 @@
+{% extends "overall_template.html" %}
+{% load pagination_tags %}
+{% load i18n %}
+{% load staticfiles %}
+{% load poll_extras %}
+{% block pagetitle %}欢迎使用本系统{% endblock %}
+
+{% block extrajs %}
+{% endblock %}
+
+{% block body %}
+
+
+
+<div id="templatemo_main">
+	<form action="" method="get">
+    <div id="content"> 
+       <div id="home" class="section_query_condition">
+       		<div class="text_box_label_query w100">
+				投标时间从
+			</div> 
+			<div class="text_box_input_query">
+           		{{ form.start_date }}
+           </div>
+       		<div class="text_box_label_query w30">
+			到
+           </div>
+			<div class="text_box_input_query">
+           	{{ form.end_date }}
+           </div>
+       		<div class="text_box_label_query w30">
+			平台
+           </div>
+			<div class="text_box_input_query w100">
+           	{{ form.platform }}
+           </div>
+       		<div class="text_box_label_query w30">
+			状态
+           </div>
+			<div class="text_box_input_query w100">
+			{{ form.status}}
+           </div>
+           <div class="right">
+    			<input type="submit" value="查询">
+    		</div>
+        </div>
+    	<table class="mytable">
+ 		{% autopaginate loan_list 18%}
+    		<tr><td colspan=8>借出明细：<a id="titlenum">{{ record_number }}</a> 笔, 总金额：<a id="titlenum">{{amount_sum}}</a>, 总收益：<a id="titlenum">{{income_sum}}</a>, 总管理费：<a id="titlenum">{{feeamt_sum}}</a></td></tr>
+    		<tr>
+	    		<th width=30 >序号</th>
+	    		<th width=100 >操作</th>
+	    		<th width=100 >平台</th>
+	    		<th width=100 >利率</th>
+	    		<th width=100 >金额</th>
+	    		<th width=100 >收益</th>
+	    		<th width=100 >管理费</th>
+	    		<th width=100 >状态</th>
+	    		<th width=100 >已还期数/期数</th>
+	    		<th width=100 >投标日期</th>
+	    		<th width=100 >还款方式</th>
+			</tr>
+			
+  			{% for data in loan_list %}
+  				<tr>
+     			<td>
+     				{% ifequal data.status.status 0 %}
+     					<a id="textnotreturn">
+     				{% endifequal %}
+     				{% ifequal data.status.status 1 %}
+     					<a id="textreturned">
+     				{% endifequal %}
+     				{% ifequal data.status.status 2 %}
+     					<a id="textbad">
+     				{% endifequal %}
+     				{{ request.page|minus:1|times:18|add:forloop.counter }}</a></td>
+     			<td><a href="loan_modify?loanid={{ data.id }}">改  </a>
+     				<a href="Loan_delete?loanid={{ data.id }}" onclick="return confirm('你确认要删除吗?将同时删除该记录下的待还款记录');">删</a></td>
+		     	<td>
+     				{% ifequal data.status.status 0 %}
+     					<a id="textnotreturn">
+     				{% endifequal %}
+     				{% ifequal data.status.status 1 %}
+     					<a id="textreturned">
+     				{% endifequal %}
+     				{% ifequal data.status.status 2 %}
+     					<a id="textbad">
+     				{% endifequal %}
+
+		     		{{ data.platform.name }}</a></td>      
+     			<td>
+     				{% ifequal data.status.status 0 %}
+     					<a id="textnotreturn">
+     				{% endifequal %}
+     				{% ifequal data.status.status 1 %}
+     					<a id="textreturned">
+     				{% endifequal %}
+     				{% ifequal data.status.status 2 %}
+     					<a id="textbad">
+     				{% endifequal %}
+
+     				{{ data.insrate }}</a></td>
+     			<td>
+     				{% ifequal data.status.status 0 %}
+     					<a id="textnotreturn">
+     				{% endifequal %}
+     				{% ifequal data.status.status 1 %}
+     					<a id="textreturned">
+     				{% endifequal %}
+     				{% ifequal data.status.status 2 %}
+     					<a id="textbad">
+     				{% endifequal %}
+
+     				{{ data.amount }}</a></td>
+     			<td>
+     				{% ifequal data.status.status 0 %}
+     					<a id="textnotreturn">
+     				{% endifequal %}
+     				{% ifequal data.status.status 1 %}
+     					<a id="textreturned">
+     				{% endifequal %}
+     				{% ifequal data.status.status 2 %}
+     					<a id="textbad">
+     				{% endifequal %}
+
+     				{{ data.insamt|add:data.awardamt|add:data.offlineamt|add:data.continuedamt }}</a></td>
+     			<td>
+     				{% ifequal data.status.status 0 %}
+     					<a id="textnotreturn">
+     				{% endifequal %}
+     				{% ifequal data.status.status 1 %}
+     					<a id="textreturned">
+     				{% endifequal %}
+     				{% ifequal data.status.status 2 %}
+     					<a id="textbad">
+     				{% endifequal %}
+
+     				{{ data.feeamt }}</a></td>
+     			<td>
+     				{% ifequal data.status.status 0 %}
+     					<a id="textnotreturn">
+     				{% endifequal %}
+     				{% ifequal data.status.status 1 %}
+     					<a id="textreturned">
+     				{% endifequal %}
+     				{% ifequal data.status.status 2 %}
+     					<a id="textbad">
+     				{% endifequal %}
+
+     				{{ data.status }}</a></td>
+     			<td>
+     				{% ifequal data.status.status 0 %}
+     					<a id="textnotreturn">
+     				{% endifequal %}
+     				{% ifequal data.status.status 1 %}
+     					<a id="textreturned">
+     				{% endifequal %}
+     				{% ifequal data.status.status 2 %}
+     					<a id="textbad">
+     				{% endifequal %}
+
+     				{{ data.duration }}
+     				{% ifequal data.daily 1 %}
+     				天
+     				{% else %}
+     				个月
+     				{% endifequal %}
+     			</a></td>
+     			
+     			<td>
+     				{% ifequal data.status.status 0 %}
+     					<a id="textnotreturn">
+     				{% endifequal %}
+     				{% ifequal data.status.status 1 %}
+     					<a id="textreturned">
+     				{% endifequal %}
+     				{% ifequal data.status.status 2 %}
+     					<a id="textbad">
+     				{% endifequal %}
+
+     				{{ data.loandate|date:"SHORT_DATE_FORMAT" }}</a></td>
+     			<td>
+     				{% ifequal data.status.status 0 %}
+     					<a id="textnotreturn">
+     				{% endifequal %}
+     				{% ifequal data.status.status 1 %}
+     					<a id="textreturned">
+     				{% endifequal %}
+     				{% ifequal data.status.status 2 %}
+     					<a id="textbad">
+     				{% endifequal %}
+
+     				{{ data.returntype }}
+     			</a></td>
+  			{% endfor %}
+  		</table>
+		{% paginate %}
+	
+		</div>
+	</div>
+</div>
+{% endblock %}

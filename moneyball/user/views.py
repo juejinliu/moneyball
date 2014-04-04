@@ -26,7 +26,7 @@ def registe(request):
             if user is not None:
                 login(request, user)
                 messages.add_message(request, messages.SUCCESS, (u'Thank you for registering, %s. You are now logged in.' % user.username))
-                return render_to_response("welcome.html", context_instance=RequestContext(request))
+                return HttpResponseRedirect('/welcome')
             messages.add_message(request, messages.SUCCESS, (u'Thank you for registering, %s. You may now proceed to log in.' % user.username))
             return render_to_response("login.html", context_instance=RequestContext(request))
         
