@@ -1,23 +1,155 @@
 {% extends "overall_template.html" %}
+{% load pagination_tags %}
 {% load i18n %}
 {% load staticfiles %}
-{% block pagetitle %}微信{% endblock %}
+{% load poll_extras %}
+{% block pagetitle %}借出明细{% endblock %}
 
 {% block extrajs %}
+<script type="text/javascript" >
+$(document).ready(function () {
+    $("#id_platform").change(function () {
+    	var params = $("#id_platform option:selected").val();
+        $.ajax({
+            url:"{% url 'get_platform_fee' %}",
+            type:'POST',
+            data:{
+            	'platform':params
+            },
+            dataType:'json',
+            success:function (data) {
+                $("#id_feerate").val(data.result);
+            }
+        });
+    });
+});
+</script>
 
 {% endblock %}
 
 {% block body %}
+    	<div id="content">
+    	<div id="left_half_content">
+
+    	<table class="mytable">
+ 		{% autopaginate loan_list 18%}
+    		<tr><td colspan=8>总数：<a id="titlenum">{{ loan_list.count }}</a> </td></tr>
+    		<tr>
+	    		<th width=30 >序号</th>
+	    		<th width=100 >操作</th>
+	    		<th width=100 >平台</th>
+	    		<th width=100 >金额</th>
+	    		<th width=100 >期限</th>
+	    		<th width=100 >状态</th>
+	    		<th width=100 >日期</th>
+			</tr>
+			
+  			{% for data in loan_list %}
+  				<tr>
+     			<td>
+     				{% ifequal data.status.status 0 %}
+     					<a id="textnotreturn">
+     				{% endifequal %}
+     				{% ifequal data.status.status 1 %}
+     					<a id="textreturned">
+     				{% endifequal %}
+     				{% ifequal data.status.status 2 %}
+     					<a id="textbad">
+     				{% endifequal %}
+     				{{ request.page|minus:1|times:18|add:forloop.counter }}</a></td>
+     			<td><a href="{% url 'query_one_loan' data.id %}">改  </a>
+     				<a href="{% url 'delete_one_loan' data.id %}" onclick="return confirm('你确认要删除吗?将同时删除该记录下的待还款记录');">删</a></td>
+		     	<td>
+     				{% ifequal data.status.status 0 %}
+     					<a id="textnotreturn">
+     				{% endifequal %}
+     				{% ifequal data.status.status 1 %}
+     					<a id="textreturned">
+     				{% endifequal %}
+     				{% ifequal data.status.status 2 %}
+     					<a id="textbad">
+     				{% endifequal %}
+
+		     		{{ data.platform.name }}</a></td>      
+     			<td>
+     				{% ifequal data.status.status 0 %}
+     					<a id="textnotreturn">
+     				{% endifequal %}
+     				{% ifequal data.status.status 1 %}
+     					<a id="textreturned">
+     				{% endifequal %}
+     				{% ifequal data.status.status 2 %}
+     					<a id="textbad">
+     				{% endifequal %}
+     				{{ data.amount }}</a></td>
+     			<td>
+     				{% ifequal data.status.status 0 %}
+     					<a id="textnotreturn">
+     				{% endifequal %}
+     				{% ifequal data.status.status 1 %}
+     					<a id="textreturned">
+     				{% endifequal %}
+     				{% ifequal data.status.status 2 %}
+     					<a id="textbad">
+     				{% endifequal %}
+     				{{ data.duration }}
+     				{% ifequal data.daily 1 %}
+     				天
+     				{% else %}
+     				个月
+     				{% endifequal %}
+     			<td>
+     				{% ifequal data.status.status 0 %}
+     					<a id="textnotreturn">
+     				{% endifequal %}
+     				{% ifequal data.status.status 1 %}
+     					<a id="textreturned">
+     				{% endifequal %}
+     				{% ifequal data.status.status 2 %}
+     					<a id="textbad">
+     				{% endifequal %}
+     				{{ data.status }}</a></td>
+     			<td>
+     				{% ifequal data.status.status 0 %}
+     					<a id="textnotreturn">
+     				{% endifequal %}
+     				{% ifequal data.status.status 1 %}
+     					<a id="textreturned">
+     				{% endifequal %}
+     				{% ifequal data.status.status 2 %}
+     					<a id="textbad">
+     				{% endifequal %}
+     				{{ data.loandate|date:"SHORT_DATE_FORMAT" }}</a></td>
+  			{% endfor %}
+  		</table>
+		{% paginate %}
+
+    	</div>
+    	<div id="split_content"> 
+    	</div>
+    {% ifequal lnid Null %} 
+    	<form action="{% url 'action_all_loan' %}" method="post">
+    {% else %}
+    	<form action="{% url 'add_update_one_loan' lnid%}" method="post">
+    {%endifequal%}
+    	<div id="righ_half_content">
 {% if form.errors %}
         <p style="color: red;">
-            Please correct the error{{ form.errors|pluralize }} below.
+            	请修正以下错误.
         </p>
-    {% endif %}
-
-    <form action="" method="post">
-        <table>
-            {{ form.as_table }}
-        </table>
-        <input type="submit" value="增加">
+{% endif %}
+{% if infomsg %}
+        <p style="color: blue;">
+            	{{infomsg}}
+        </p>
+{% endif %}
+        	<table>
+            	{{ form.as_table }}
+        	</table>
+        	<input type="submit" value="添加/修改">
+        	<a href="{% url 'action_all_loan' %}"><span>清空</span>  </a>
+        </div>
     </form>
+        </div>
 {% endblock %}
+

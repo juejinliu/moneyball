@@ -13,8 +13,7 @@ class LoanForm(forms.Form):
     loandate = forms.DateField(label=u'日期', initial=datetime.date.today(), widget=SelectDateWidget())
     platform = forms.ModelChoiceField(label=u'平台',queryset=None)
     amount = forms.DecimalField(label=u'金额', initial='0')
-    #RETURNCHOICES = (('1', u'等额本息',),('2', u'月还息到期还本',), ('3', '到期还本息',))     #'1':'等额本息','2':'月还息到期还本','3':'到期还本息'
-    returntype = forms.ModelChoiceField(label=u'还款方式',queryset=None)
+    returntype = forms.ModelChoiceField(label=u'还款方式',queryset=None, initial=1)
     duration = forms.IntegerField(label=u'借款期限', initial='1')
     DURATIONCHOICES = (('0', u'月',),('1', u'天',))     #
     daily = forms.ChoiceField(label=u'', initial='0', widget=forms.RadioSelect, choices=DURATIONCHOICES)
@@ -28,12 +27,62 @@ class LoanForm(forms.Form):
     comments =  forms.CharField(label=u'备注', widget=forms.Textarea(),required=False)
     error_css_class = 'error'
     required_css_class = 'required'
-    def __init__(self, user, *args, **kwargs):
+    def clean_amount(self):
+        amount = self.cleaned_data['amount']
+        if amount <= 0.00:
+            raise forms.ValidationError("金额必须大于0!")
+        return amount
+    def clean_duration(self):
+        duration = self.cleaned_data['duration']
+        if duration <= 0:
+            raise forms.ValidationError("期限必须大于0!")
+        return duration
+    def clean_insrate(self):
+        insrate = self.cleaned_data['insrate']
+        if insrate <= 0.00:
+            raise forms.ValidationError("利率必须大于0!")
+        return insrate
+    def clean_continuerate(self):
+        continuerate = self.cleaned_data['continuerate']
+        if continuerate < 0.0000:
+            raise forms.ValidationError("续投奖励不能小于0!")
+        return continuerate
+    def clean_awardrate(self):
+        awardrate = self.cleaned_data['awardrate']
+        if awardrate < 0.0000:
+            raise forms.ValidationError("投标奖励不能小于0!")
+        return awardrate
+    def clean_feerate(self):
+        feerate = self.cleaned_data['feerate']
+        if feerate < 0.0000:
+            raise forms.ValidationError("管理费不能小于0!")
+        return feerate
+    def clean_offlinerate(self):
+        offlinerate = self.cleaned_data['offlinerate']
+        if offlinerate < 0.0000:
+            raise forms.ValidationError("线下充值奖励不能小于0!")
+        return offlinerate
+    def __init__(self, user, data, *args, **kwargs):
         self.user = user
         super(LoanForm, self).__init__(*args, **kwargs)
         self.fields['platform'].queryset = Platform.objects.filter(user=self.user).order_by('name')
         self.fields['returntype'].queryset = Returntype.objects.all().order_by('type')
-    
+        if data:
+            if isinstance(data, Loan) and data.platform:
+                self.fields['loandate'].initial = data.loandate
+                self.fields['platform'].initial = data.platform
+                self.fields['amount'].initial = data.amount
+                self.fields['returntype'].initial = data.returntype
+                self.fields['duration'].initial = data.duration
+                self.fields['daily'].initial = data.daily
+                self.fields['insratetype'].initial = data.insratetype
+                self.fields['insrate'].initial = data.insrate
+                self.fields['continuerate'].initial = data.continuerate
+                self.fields['awardrate'].initial = data.awardrate
+                self.fields['feerate'].initial = data.feerate
+                self.fields['offlinerate'].initial = data.offlinerate
+                self.fields['comments'].initial = data.comments
+
     def calinsamt(self, instance=None):
         if instance is None:
             la = Loan()
@@ -151,8 +200,10 @@ class LoanForm(forms.Form):
             loandtl.ownamt = la.amount
             loandtl.expiredate = la.loandate + datetime.timedelta(days=la.duration)
             loandtl.save(force_insert=True)
-    ##############################################
-    def save(self, instance=None):
+    #===========================================================================
+    # 保存一条借出记录要先把原来的记录删除
+    #===========================================================================
+    def save(self, instance=None, lnid=None):
         # Check the instance we've been given (if any)
         if instance is None:
             la = Loan()
@@ -160,6 +211,11 @@ class LoanForm(forms.Form):
             la = instance
         else:
             raise TypeError("instance is not a Loan")
+#        先将老的数据删除，然后增加一条新的数据
+        if lnid:    
+            la_old = Loan.objects.get(id = lnid)
+            la_old.delete()
+        la.id = None
         la.user = self.user
         la.loandate = self.cleaned_data['loandate']
         la.platform = self.cleaned_data['platform']
@@ -174,6 +230,19 @@ class LoanForm(forms.Form):
         la.feerate = self.cleaned_data['feerate']
         la.offlinerate = self.cleaned_data['offlinerate']
         la.comments = self.cleaned_data['comments']
+#         la.loandate = self.cleaned_data['loandate']
+#         la.platform = self.cleaned_data['platform']
+#         la.amount = self.data['amount']
+#         la.returntype = self.cleaned_data['returntype']
+#         la.duration = self.data['duration']
+#         la.daily = self.data['daily']
+#         la.insratetype = self.cleaned_data['insratetype']
+#         la.insrate = self.data['insrate']
+#         la.continuerate = self.data['continuerate']
+#         la.awardrate = self.data['awardrate']
+#         la.feerate = self.data['feerate']
+#         la.offlinerate = self.data['offlinerate']
+#         la.comments = self.data['comments']
         ######################计算数据
         tmpstatus = Returnstatus.objects.get(status = 0)
         la.status = tmpstatus
@@ -204,7 +273,7 @@ class PlatformForm(forms.Form):
     def __init__(self, data, *args, **kwargs):
         super(PlatformForm, self).__init__(*args, **kwargs)
         if data:
-            if isinstance(data, Platform):
+            if isinstance(data, Platform) and data.name:
                 self.fields['name'].initial = data.name
                 self.fields['platformurl'].initial = data.platformurl
                 self.fields['rate'].initial = data.rate

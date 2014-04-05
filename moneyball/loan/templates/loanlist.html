@@ -46,7 +46,7 @@
         </div>
     	<table class="mytable">
  		{% autopaginate loan_list 18%}
-    		<tr><td colspan=8>借出明细：<a id="titlenum">{{ record_number }}</a> 笔, 总金额：<a id="titlenum">{{amount_sum}}</a>, 总收益：<a id="titlenum">{{income_sum}}</a>, 总管理费：<a id="titlenum">{{feeamt_sum}}</a></td></tr>
+    		<tr><td colspan=8>借出明细：<a id="titlenum"> {{record_number}} </a> 笔, 总金额：<a id="titlenum">{{amount_sum}}</a>, 总收益：<a id="titlenum">{{income_sum}}</a>, 总管理费：<a id="titlenum">{{feeamt_sum}}</a></td></tr>
     		<tr>
 	    		<th width=30 >序号</th>
 	    		<th width=100 >操作</th>
@@ -74,8 +74,8 @@
      					<a id="textbad">
      				{% endifequal %}
      				{{ request.page|minus:1|times:18|add:forloop.counter }}</a></td>
-     			<td><a href="loan_modify?loanid={{ data.id }}">改  </a>
-     				<a href="Loan_delete?loanid={{ data.id }}" onclick="return confirm('你确认要删除吗?将同时删除该记录下的待还款记录');">删</a></td>
+     			<td><a href="{% url 'query_one_loan' data.id %}">改  </a>
+     				<a href="{% url 'delete_one_loan' data.id %}" onclick="return confirm('你确认要删除吗?将同时删除该记录下的待还款记录');">删</a></td>
 		     	<td>
      				{% ifequal data.status.status 0 %}
      					<a id="textnotreturn">
@@ -98,7 +98,6 @@
      				{% ifequal data.status.status 2 %}
      					<a id="textbad">
      				{% endifequal %}
-
      				{{ data.insrate }}</a></td>
      			<td>
      				{% ifequal data.status.status 0 %}
@@ -110,7 +109,6 @@
      				{% ifequal data.status.status 2 %}
      					<a id="textbad">
      				{% endifequal %}
-
      				{{ data.amount }}</a></td>
      			<td>
      				{% ifequal data.status.status 0 %}
@@ -122,7 +120,6 @@
      				{% ifequal data.status.status 2 %}
      					<a id="textbad">
      				{% endifequal %}
-
      				{{ data.insamt|add:data.awardamt|add:data.offlineamt|add:data.continuedamt }}</a></td>
      			<td>
      				{% ifequal data.status.status 0 %}
@@ -134,7 +131,6 @@
      				{% ifequal data.status.status 2 %}
      					<a id="textbad">
      				{% endifequal %}
-
      				{{ data.feeamt }}</a></td>
      			<td>
      				{% ifequal data.status.status 0 %}
@@ -146,7 +142,6 @@
      				{% ifequal data.status.status 2 %}
      					<a id="textbad">
      				{% endifequal %}
-
      				{{ data.status }}</a></td>
      			<td>
      				{% ifequal data.status.status 0 %}
@@ -158,7 +153,6 @@
      				{% ifequal data.status.status 2 %}
      					<a id="textbad">
      				{% endifequal %}
-
      				{{ data.duration }}
      				{% ifequal data.daily 1 %}
      				天
@@ -177,7 +171,6 @@
      				{% ifequal data.status.status 2 %}
      					<a id="textbad">
      				{% endifequal %}
-
      				{{ data.loandate|date:"SHORT_DATE_FORMAT" }}</a></td>
      			<td>
      				{% ifequal data.status.status 0 %}

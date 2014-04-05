@@ -19,11 +19,18 @@ def welcome(request):
     today_due_list = Loandetail.objects.filter(user=request.user,status=tempstatus).order_by('expiredate')
     amount_sum = 0.00
     if today_due_list and today_due_list.count > 0:
-        amount_sum = today_due_list.aggregate(Sum('ownamt'))['ownamt__sum']
-        amount_sum += today_due_list.aggregate(Sum('insamt'))['insamt__sum']
-        amount_sum -= today_due_list.aggregate(Sum('feeamt'))['feeamt__sum']
+#         amount_sum = today_due_list.aggregate(Sum('ownamt'))['ownamt__sum']
+#         amount_sum += today_due_list.aggregate(Sum('insamt'))['insamt__sum']
+#         amount_sum -= today_due_list.aggregate(Sum('feeamt'))['feeamt__sum']
+        insamt_sum = today_due_list.aggregate(Sum('insamt'))['insamt__sum']
+        ownamt_sum = today_due_list.aggregate(Sum('ownamt'))['ownamt__sum']
+        feeamt_sum = today_due_list.aggregate(Sum('feeamt'))['feeamt__sum']
+        amount_sum = ownamt_sum + insamt_sum - feeamt_sum
     return render_to_response('welcome.html', {"today_due_list": today_due_list,
                                                "record_number": today_due_list.count,
+                                               "insamt_sum": insamt_sum,
+                                               "ownamt_sum": ownamt_sum,
+                                               "feeamt_sum": feeamt_sum,
                                                "amount_sum":amount_sum,}, RequestContext(request))
 
 def wxfocus(request):

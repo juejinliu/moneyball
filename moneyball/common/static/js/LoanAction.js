@@ -1,18 +1,16 @@
 $(document).ready(function () {
-    $("#platform_id").change(function () {
-    	var params = $("#platform_id option:selected").val();
+    $("#id_platform").change(function () {
+    	var params = $("#id_platform option:selected").val();
         $.ajax({
-            url:root+"/getPlatformFee.action",
+            url:"{% url 'get_platform_fee' %}",
             type:'POST',
             data:{
-            	'platform_id':params
+            	'platform':params
             },
             dataType:'json',
             success:function (data) {
-                $("#fee_rate").val(data.result);
+                $("#id_feerate").val(data.result);
             }
         });
     });
-
-
 });

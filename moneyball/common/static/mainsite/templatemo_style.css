@@ -95,10 +95,10 @@ img { margin: 0; padding: 0; border: none }
 	background: url(../images/templatemo_footer.png) center top no-repeat
 }
 #templatemo_footer {
-	width: 780px;
+	width: 1000px;
 	margin: 0 auto;
 	padding: 20px 20px;
-	text-align: right
+	text-align: center
 }
 
 #submit_btn {

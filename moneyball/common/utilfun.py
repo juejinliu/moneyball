@@ -23,7 +23,7 @@ def addmonths(date,months,favorEoM):
                 targetdate.replace(year=targetdate.year+int(targetmonths/12),month=(targetmonth))  
         else:  
             # Do not favor matching an End of Month date to the offset End of Month.  
-            returndate = targetdate.replace(year=targetdate.year+int(targetmonths/12),month=(targetmonth))  
+            returndate = targetdate.replace(year=targetdate.year+int((targetmonths-1)/12),month=(targetmonth))  
         return returndate  
     except:  
         # There is an exception if the day of the month we're in does not exist in the target month  

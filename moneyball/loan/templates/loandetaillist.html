@@ -172,9 +172,9 @@
      				{{ data.expiredate|date:"SHORT_DATE_FORMAT" }}</td>
      			<td>
      				{% ifequal data.status.status 0 %}
-     					<a href="/loan/loan_detail_return?Loan_detail_id={{ data.id }}">设置回款  </a>
+     					<a href="/loan/loan_detail_return?Loan_detail_id={{ data.id }}">回款  </a>
      				{% else %}
-     					<a href="/loan/loan_detail_no_return?Loan_detail_id={{ data.id }}">设置未回款</a></td>
+     					<a href="/loan/loan_detail_no_return?Loan_detail_id={{ data.id }}">未回款</a></td>
      				{% endifequal %}
      			</tr>
      		

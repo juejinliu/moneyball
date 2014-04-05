@@ -25,7 +25,11 @@
     	<link rel="stylesheet" href="{% static "mainsite/table.css" %}">
     	<link rel="stylesheet" href="{% static "mainsite/slimbox2.css" %}" type="text/css" media="screen" />
 		{% block extracss %}{% endblock %}
+		<script type="text/javascript" src="{% static "js/jquery.js" %}" ></script>
+
+		{% block extrajs %}{% endblock %}
 	</head>
+	
 <body style="margin: 0;	padding: 0;	color: #333;font-size: 12px;line-height: 1.6em;	font-family: sans-serif;background-color: #868686;	background-image:url({% static "images/templatemo_body.jpg" %});	background-position: top;background-repeat: repeat-x">
 <table border="0" cellpadding="2" cellspacing="2" align="center">
     <tr>
@@ -37,7 +41,7 @@
         <td width="1000">{% block body %}{% endblock %}</td>
     </tr>
     <tr>
-        <td height="30" colspan="2">{% block footer %}{% endblock %}
+        <td height="30" colspan="3" align="center">{% block footer %}{% endblock %}
         </td>
     </tr>
 </table>

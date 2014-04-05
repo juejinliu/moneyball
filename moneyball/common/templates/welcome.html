@@ -24,9 +24,15 @@
                     <a href="view_summary" class="more_btn">账务</a>
 				</div>
            </div>
-           <div class="photo_box">
-           		<a href="loan-form" title="录入一笔"><img src="{% static "images/welcome_1.png" %}" alt="input_record" /></a>
-            </div>
+           <div class="text_box box3">
+           		<div class="box_content">
+                	<span class="gallery"></span>
+                    <a href="view_summary" class="menu_title">财务信息</a>
+                    <div class="h10"></div>
+                    	查询您的财务汇总信息.
+                    <a href="view_summary" class="more_btn">账务</a>
+				</div>
+           </div>
          	<div class="text_box box2">
             	<div class="box_content">
                     <span class="services"></span>
@@ -36,10 +42,16 @@
                     <a href="platform-form?page=1" class="more_btn">配置</a>
 				</div>
            </div>
-           <div class="photo_box">
-            	<a href="/loan/loanlist" title="借出明细" ><img src="{% static "images/welcome_2.png" %}" alt="loan_record" /></a>
+           <div class="text_box box1">
+           		<div class="box_content">
+                	<span class="about"></span>
+                    <a href="view_summary" class="menu_title">财务信息</a>
+                    <div class="h10"></div>
+                    	查询您的财务汇总信息.
+                    <a href="view_summary" class="more_btn">账务</a>
+				</div>
            </div>
-			<div class="text_box box3 no_margin_right">
+			<div class="text_box box3">
             	<div class="box_content">
                 	<span class="gallery"></span>
                     <a href="/loan/loandetaillist" class="menu_title">待收明细</a>
@@ -48,14 +60,20 @@
 					<a href="/loan/loandetaillist" class="more_btn">待收</a>
 				</div>
            </div>
-           <div class="photo_box">
-            	<a href="/loan/loanlist" title="借出明细" ><img src="{% static "images/welcome_2.png" %}" alt="loan_record" /></a>
+			<div class="text_box box2">
+            	<div class="box_content">
+                	<span class="gallery"></span>
+                    <a href="/loan/loandetaillist" class="menu_title">待收明细</a>
+                    <div class="h10"></div>
+                     	显示目前待收明细记录.
+					<a href="/loan/loandetaillist" class="more_btn">待收</a>
+				</div>
            </div>
         </div>
 	<div id="home" class="section_due_today">
     	<table class="mytable">
  		{% autopaginate today_due_list 10%}
-    		<tr><td colspan=8>今日待收：<a id="titlenum">{{ record_number }}</a> 笔, 总金额：<a id="titlenum">{{amount_sum}}</a></td></tr>
+    		<tr><td colspan=8>今日待收：<a id="titlenum">{{ record_number }}</a> 笔, 总金额：<a id="titlenum">{{amount_sum}}</a>, 本金：<a id="titlenum">{{ownamt_sum}}</a>, 利息：<a id="titlenum">{{insamt_sum}}</a>, 费用：<a id="titlenum">{{feeamt_sum}}</a></td></tr>
     		<tr>
 	    		<th width=100 >序号</th>
 	    		<th width=100 >平台</th>

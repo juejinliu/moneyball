@@ -25,7 +25,7 @@ class Platform(models.Model):
     name = models.CharField(max_length=50)
     platformurl = models.URLField(blank=True,null=True)
     rate = models.DecimalField(decimal_places=2,max_digits=5,default=0.00)
-    active = models.ForeignKey(Booleancode,default=1)
+    active = models.ForeignKey(Booleancode,default=2)
     onlinetime = models.DateField(auto_now_add=True)
     delegaterate = models.DecimalField(decimal_places=2,max_digits=5,default=0.00)
     def __unicode__(self):

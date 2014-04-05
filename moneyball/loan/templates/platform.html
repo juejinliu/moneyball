@@ -10,12 +10,6 @@
 {% endblock %}
 
 {% block body %}
-{% if form.errors %}
-        <p style="color: red;">
-            	请修正以下错误.
-        </p>
-    {% endif %}
-
     	<div id="content">
     	<div id="left_half_content">
 
@@ -42,8 +36,13 @@
      					<a id="textreturned">
      				{% endifequal %}
      				{{ request.page|minus:1|times:18|add:forloop.counter }}</a></td>
-     			<td><a href="/loan/platform?platform_id={{ data.id }}">改  </a>
-     				<a href="/loan/platform_delete?platform_id={{ data.id }}" onclick="return confirm('你确认要隐藏此平台吗?');">隐藏</a></td>
+     			<td><a href="{% url 'action_one_platform' data.id %}">改  </a>
+     				{% ifequal data.active.code 0 %}
+     					<a href="{% url 'hide_platform' data.id 1 %}" onclick="return confirm('你确认要启用此平台吗?');">启用</a></td>
+     				{% else %}
+     					<a href="{% url 'hide_platform' data.id 0 %}" onclick="return confirm('你确认要隐藏此平台吗?');">隐藏</a></td>
+     				{% endifequal %}
+     				
 		     	<td>
      				{% ifequal data.active.code 0 %}
      					<a id="textnotreturn">
@@ -91,32 +90,28 @@
      				{% endifequal %}
      				{{ data.active }}</a></td>
   			{% endfor %}
-    {% for field in form %}
-    	
-            {{ field.errors }}
-             {% for error in field.errors %}
-             	{{error}}
-             	{% endfor %}
-    {% endfor %}  			
-    {{ form.errors }}
-    {{ form.non_field_errors }}
   		</table>
 		{% paginate %}
-
-
 
     	</div>
     	<div id="split_content"> 
     	</div>
-    <form action="/loan/platform/?platform_id={{ id }}" method="post">
+    {% ifequal id Null %} 
+    	<form action="{% url 'action_all_platform' %}" method="post">
+    {% else %}
+    	<form action="{% url 'action_one_platform' id%}" method="post">
+    {%endifequal%}
     	<div id="righ_half_content">
+{% if form.errors %}
+        <p style="color: red;">
+            	请修正以下错误.
+        </p>
+{% endif %}
         	<table>
-		    	{{ form.errors }}
-    			{{ form.non_field_errors }}
-        		
             	{{ form.as_table }}
         	</table>
         	<input type="submit" value="添加/修改">
+        	<a href="{% url 'action_all_platform' %}"><span>清空</span>  </a>
         </div>
     </form>
         </div>

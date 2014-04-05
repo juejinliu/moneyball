@@ -9,6 +9,8 @@ from django.contrib.auth.decorators import login_required
 from moneyball.loan.models import Loan
 from django.db.models import Sum
 from moneyball.loan.models import *
+import json
+
 # Create your views here.
 def index(request):
     pass
@@ -115,48 +117,115 @@ def loan_detail_bad(request):
     previousurl = request.META['HTTP_REFERER']
     return HttpResponseRedirect(previousurl)
 
+#===============================================================================
+# 借款记录的添加修改都在这个类里面完成
+#===============================================================================
 @login_required
-def loaninfo(request):
+def loaninfo(request,lnid=None):
+    infomsg = u''
     if request.method == 'POST':
-        form = LoanForm(request.user, request.POST)
+#         参数data应该是None，POST的数据作为args传入
+        form = LoanForm(request.user,None, request.POST)
         if form.is_valid():
             #try:
-            new_loan = form.save()
+            new_loan = form.save(None,lnid)
+            infomsg = u'操作成功'
             #except:
                 #raise Http404
-            return render_to_response("success.html",({'infomsg':u'添加成功'}), RequestContext(request))
-        else:
-            pass
-    else:
-        form = LoanForm(request.user)
-    return render_to_response("loan.html", {'form': form}, RequestContext(request))
+#             return render_to_response("success.html",({'infomsg':u'添加成功'}), RequestContext(request))
+    elif request.method == 'GET':
+        try:
+            if lnid:
+                rtn_record = Loan.objects.get(id=lnid)
+                form = LoanForm(request.user,rtn_record)
+                lnid = rtn_record.id
+            else:
+                form = LoanForm(request.user,None)
+        except LoanForm.DoesNotExist:
+            return render_to_response("success.html",({'errormsg':u'不存在这条记录'}), RequestContext(request))
+    results = Loan.objects.filter(user=request.user).order_by('-loandate')
+    return render_to_response("loan.html", RequestContext(request,{
+                                                'form': form,
+                                                'lnid': lnid,
+                                                'infomsg':infomsg,
+                                                "loan_list": results})
+                              )
 
+#===============================================================================
+# 借款记录的删除
+#===============================================================================
 @login_required
-def platforminfo(request):
+def loandelete(request,lnid=None):
+    form = LoanForm(request.user,None)
+    if request.method == 'GET':
+        if lnid:
+            #try:
+            delete_loan = Loan.objects.get(id=lnid)
+            delete_loan.delete()
+            #except:
+                #raise Http404
+#             return render_to_response("success.html",({'infomsg':u'添加成功'}), RequestContext(request))
+    results = Loan.objects.filter(user=request.user).order_by('-loandate')
+    previousurl = request.META['HTTP_REFERER']
+    return HttpResponseRedirect(previousurl, RequestContext(request,{
+                                                'form': form,
+                                                'infomsg':u'删除成功',
+                                                "loan_list": results})
+                              )
+#     return render_to_response("loan.html", RequestContext(request,{
+#                                                 'form': form,
+#                                                 'infomsg':u'删除成功',
+#                                                 "loan_list": results})
+#                               )
+
+
+#===============================================================================
+# 平台的修改，隐藏，添加操作在这个类里面全部完成
+#===============================================================================
+@login_required
+def platforminfo(request,pfid=None,status=None):
     form = PlatformForm(Platform())
-    platformid = None
+    platformid = pfid
     if request.method == 'POST':
         form = PlatformForm(None,request.POST)
         if form.is_valid():
             #try:
-            new_platform = form.save(request,None,request.GET['platform_id'])
+            new_platform = form.save(request,None,pfid)
             #except:
             #    raise Http404
     elif request.method == 'GET':
         try:
-            if request.GET and request.GET['platform_id']:
-                rtn_record = Platform.objects.get(id=request.GET['platform_id'])
-                form = PlatformForm(rtn_record)
-                platformid = rtn_record.id
+            if pfid:
+                rtn_record = Platform.objects.get(id=pfid)
+                if status:
+                    status_record = Booleancode.objects.get(code=status)
+                    rtn_record.active = status_record
+                    rtn_record.save()
+                else:
+                    form = PlatformForm(rtn_record)
+                    platformid = rtn_record.id
         except Platform.DoesNotExist:
             return render_to_response("success.html",({'errormsg':u'不存在这条记录'}), RequestContext(request))
-    
     results = Platform.objects.filter(user=request.user).order_by('id')
     return render_to_response("platform.html", RequestContext(request,{
                                                 'form': form,
                                                 'id': platformid,
+                                                'infomsg':u'操作成功',
                                                 "platform_list": results})
                                   )
+
+@login_required
+def getplatformfee(request):
+    fee = 99.99
+    items_dict = {'result':'0.00'}
+    if request.method == 'POST':
+        rtn_record = Platform.objects.get(id=request.POST['platform'])
+        if rtn_record:
+            #try:
+             items_dict['result'] = str(rtn_record.rate)
+            #except:
+            #    raise Http404
+    return HttpResponse(json.dumps(items_dict), content_type="application/json" )
 
 @login_required
 def loanlist(request):
@@ -168,7 +237,7 @@ def loanlist(request):
         form = LoanSearchForm(request.user,request.GET)
         if form.is_valid():
             results = form.get_result_queryset().filter(user=request.user).order_by('-loandate')
-#             record_number = results.count()
+            record_number = results.count()
             if results and results.count() > 0:
                 amount_sum = results.aggregate(Sum('amount'))['amount__sum']
                 income_sum = results.aggregate(Sum('insamt'))['insamt__sum']
@@ -202,7 +271,7 @@ def loandetaillist(request):
         form = LoanDtlSearchForm(request.user,request.GET)
         if form.is_valid():
             results = form.get_result_queryset().filter(user=request.user).order_by('-expiredate')
-#             record_number = results.count
+            record_number = results.count
             if results and results.count() > 0:
                 ownamt_sum = results.aggregate(Sum('ownamt'))['ownamt__sum']
                 insamt_sum = results.aggregate(Sum('insamt'))['insamt__sum']
