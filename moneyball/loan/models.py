@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*- 
 from django.db import models
 from django.contrib.auth.models import User
+from django.template.loader import render_to_string
 
 class Booleancode(models.Model):
     code = models.IntegerField(default=1,unique=True)
@@ -60,7 +61,15 @@ class Loan(models.Model):
     def __unicode__(self):
         return unicode(self.user)
     
-                    
+    def enrollment_chart(self):
+        lu = { 'categories' : [ 'Fall 2008', 'Spring 2009','Fall 2009', 'Spring 2010', 'Fall 2010', 'Spring 2011'],\
+             'undergrad' : [18, 22, 30, 34, 40, 47],\
+             'grad' : [1, 2, 4, 4, 5, 7],\
+             'employee' : [2, 3, 0, 1, 1, 2] }
+        lu['total_enrolled'] = [sum(a) for a in zip(lu['undergrad'], lu['grad'],lu['employee'])]
+        return render_to_string('admin/loan/loan/enrollment_chart.html', lu )
+    enrollment_chart.allow_tags = True                    
+
 class Loandetail(models.Model):
     loan = models.ForeignKey(Loan)
     user = models.ForeignKey(User)
@@ -79,3 +88,5 @@ class Loandetail(models.Model):
     comments = models.CharField(blank=True,null=True,max_length=300)
     def __unicode__(self):
         return unicode(self.feeamt)
+
+

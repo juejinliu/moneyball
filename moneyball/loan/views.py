@@ -9,6 +9,9 @@ from django.contrib.auth.decorators import login_required
 from moneyball.loan.models import Loan
 from django.db.models import Sum
 from moneyball.loan.models import *
+from graphos.sources.model import ModelDataSource
+from graphos.renderers import flot
+from django.template.loader import render_to_string
 import json
 
 # Create your views here.
@@ -19,7 +22,31 @@ def index(request):
 #===============================================================================
 @login_required
 def loansummary(request):
-    pass
+#     queryset =  Loan.objects.all()
+#     data_source = ModelDataSource(queryset,fields=['loandate','amount'])
+#     chart = flot.LineChart(data_source)
+    items_dict = {'chart':'bar'}
+#     items_dict['result'] = str(rtn_record.rate)
+            #except:
+            #    raise Http404
+    lu = { 'categories' : [ 'Fall 2008', 'Spring 2009','Fall 2009', 'Spring 2010', 'Fall 2010', 'Spring 2011'],\
+             'undergrad' : [18, 22, 30, 34, 40, 47],\
+             'grad' : [1, 2, 4, 4, 5, 7],\
+             'employee' : [2, 3, 0, 1, 1, 2] }
+    lu['total_enrolled'] = [sum(a) for a in zip(lu['undergrad'], lu['grad'],lu['employee'])]            
+#     return HttpResponse(json.dumps(items_dict), content_type="application/json" )
+#     chart['chart'] = 'aaa'
+#     """{
+#     chart: {
+#         renderTo: 'container',
+#         type: 'bar'
+#     },
+#     series: [{
+#         name: 'Jane',
+#         data: [1, 0, 4]
+#     }]
+#     };"""
+    return render_to_response('loansummary.html', lu, RequestContext(request))
 #===============================================================================
 # 借出明细
 #===============================================================================
@@ -216,7 +243,7 @@ def platforminfo(request,pfid=None,status=None):
 
 @login_required
 def getplatformfee(request):
-    fee = 99.99
+    fee = 0.00
     items_dict = {'result':'0.00'}
     if request.method == 'POST':
         rtn_record = Platform.objects.get(id=request.POST['platform'])

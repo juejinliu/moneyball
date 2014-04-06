@@ -1,0 +1,62 @@
+<script type="text/javascript">
+var chart;
+jQuery(document).ready(function() {
+	chart = new Highcharts.Chart({
+		chart: {
+			renderTo: 'enrollment_container',
+			defaultSeriesType: 'line',
+			marginRight: 130,
+			marginBottom: 30
+		},
+		title: {
+			text: 'Enrollment by Semester ',
+			x: -20 
+		},
+		subtitle: {
+			text: '',
+			x: -20
+		},
+		xAxis: {
+			categories: [ '{{ categories|join:"','" }}']
+		},
+		yAxis: {
+			title: {
+				text: 'Number of Students'
+			},
+			plotLines: [{
+				value: 0,
+				width: 1,
+				color: '#808080'
+			}]
+		},
+		tooltip: {
+			formatter: function() {
+	                return ''+ this.series.name +''+this.x +': '+ this.y;
+			}
+		},
+		legend: {
+			layout: 'vertical',
+			align: 'right',
+			verticalAlign: 'top',
+			x: -10,
+			y: 100,
+			borderWidth: 0
+		},
+		series: [{
+			name: 'Total Enrolled',
+			data: [{{ total_enrolled|join:"," }}]
+		}, {
+			name: 'Undergrads',
+            data: [{{ undergrad|join:"," }}]
+		}, {
+			name: 'Grads',
+			data: [{{ grad|join:"," }}]
+		}, {
+			name: 'Employees',
+			data: [{{ employee|join:"," }}]
+		}]
+	});
+
+});
+</script>
+<div id="enrollment_container" style="width: 700px;height: 500px"></div>

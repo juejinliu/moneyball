@@ -43,6 +43,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'pagination',
+    'graphos',
     'moneyball.common',
     'moneyball.common.templatetags',
     'moneyball.user',

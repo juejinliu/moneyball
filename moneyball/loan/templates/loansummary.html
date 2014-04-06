@@ -1,0 +1,58 @@
+{% extends "overall_template.html" %}
+{% load pagination_tags %}
+{% load i18n %}
+{% load staticfiles %}
+{% load poll_extras %}
+{% block pagetitle %}网贷统计{% endblock %}
+
+{% block extrajs %}
+<script src="{% static 'js/jquery.js' %}"></script>
+<script src="{% static 'js/highchart/js/highcharts.js' %}"></script>
+{% endblock %}
+
+{% block body %}
+
+
+
+<div id="templatemo_main">
+
+    <div id="content"> 
+    	<div id="container" style="width:100%; height:400px;"></div>
+    	<script>
+$(document).ready(function() { 
+	var options ={
+        chart: {
+            renderTo: 'container',
+            type: 'bar'
+        },
+        title: {
+            text: 'Fruit Consumption'
+        },
+        xAxis: {
+            categories: [ '{{ categories|join:"','" }}']
+        },
+        yAxis: {
+            title: {
+                text: 'Fruit eaten'
+            }
+        },
+        series: [{
+            name: 'Jane',
+            data: [{{ total_enrolled|join:"," }}]
+        }, {
+            name: 'John',
+            data: [{{ undergrad|join:"," }}]
+        }]
+    } 
+
+
+
+
+	 var chart1 = new Highcharts.Chart(options)
+});	
+    		
+    	</script>
+
+	</div>
+</div>
+{% endblock %}
