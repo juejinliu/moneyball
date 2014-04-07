@@ -65,7 +65,7 @@ class LoanForm(forms.Form):
     def __init__(self, user, data, *args, **kwargs):
         self.user = user
         super(LoanForm, self).__init__(*args, **kwargs)
-        self.fields['platform'].queryset = Platform.objects.filter(user=self.user).order_by('name')
+        self.fields['platform'].queryset = Platform.objects.filter(user=self.user,active=2).order_by('name')
         self.fields['returntype'].queryset = Returntype.objects.all().order_by('type')
         if data:
             if isinstance(data, Loan) and data.platform:

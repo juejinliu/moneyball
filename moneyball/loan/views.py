@@ -12,8 +12,9 @@ from moneyball.loan.models import *
 from graphos.sources.model import ModelDataSource
 from graphos.renderers import flot
 from django.template.loader import render_to_string
+from moneyball.loan.loancalc import * 
 import json
-
+import datetime
 # Create your views here.
 def index(request):
     pass
@@ -25,27 +26,56 @@ def loansummary(request):
 #     queryset =  Loan.objects.all()
 #     data_source = ModelDataSource(queryset,fields=['loandate','amount'])
 #     chart = flot.LineChart(data_source)
-    items_dict = {'chart':'bar'}
 #     items_dict['result'] = str(rtn_record.rate)
             #except:
             #    raise Http404
-    lu = { 'categories' : [ 'Fall 2008', 'Spring 2009','Fall 2009', 'Spring 2010', 'Fall 2010', 'Spring 2011'],\
-             'undergrad' : [18, 22, 30, 34, 40, 47],\
-             'grad' : [1, 2, 4, 4, 5, 7],\
-             'employee' : [2, 3, 0, 1, 1, 2] }
-    lu['total_enrolled'] = [sum(a) for a in zip(lu['undergrad'], lu['grad'],lu['employee'])]            
-#     return HttpResponse(json.dumps(items_dict), content_type="application/json" )
-#     chart['chart'] = 'aaa'
-#     """{
-#     chart: {
-#         renderTo: 'container',
-#         type: 'bar'
-#     },
-#     series: [{
-#         name: 'Jane',
-#         data: [1, 0, 4]
-#     }]
-#     };"""
+    lc = loancalc(request.user)
+    dueallown = lc.getdueallown()
+    dueallins = lc.getdueallins()
+    dueallamt = dueallown + dueallins
+#     dueallown = lc.getdueallown()
+    allins = lc.getallins()
+    allfee = lc.getallfee()
+    allaward = lc.getallaward()
+    allincome = allins - allfee + allaward
+
+    currmonthins = lc.getcurrmonthins()
+    currmonthaward = lc.getcurrmonthaward()
+    currincome = currmonthins + currmonthaward
+    lu = { 'sum_category': ['当月收益','当月利息','当月奖励','总收益', '总利息','总奖励', '待收本金' ,'待收利息','待收总额']}
+    lu['sum_amount'] =[ currincome, currmonthins, currmonthaward, allincome, allins, allaward,dueallown ,dueallins,dueallamt]
+    
+    pf_list = lc.getpfsummary()
+    lu['pf_category'] = pf_list['pfnames']
+    lu['pf_dueallamt'] =  pf_list['pfdueallamt']
+    lu['pf_dueownamt'] =  pf_list['pfdueownamt']
+    lu['pf_dueinsamt'] =  pf_list['pfdueinsamt']
+    lu['pf_insamt'] =  pf_list['pfinsamt']
+    lu['pf_awardamt'] =  pf_list['pfawardamt']
+    lu['pf_incomeamt'] =  pf_list['pfincomeamt']
+    
+    m_list  = lc.getmonthsummary()
+    lu['m_category'] = m_list['m_months']
+    lu['m_amount'] = m_list['m_amount']
+    lu['m_insamt'] = m_list['m_insamt']
+    lu['m_awardamt'] = m_list['m_awardamt']
+    lu['m_incomeamt'] = m_list['m_incomeamt']
+    del lc 
+    
+#     pf_category
+#     pf_ownamt
+#     pf_insamt
+#     pf_awardamt
+#     
+#     month_category
+#     month_ownamt
+#     month_insamt
+#     month_awardamt
+#     lu = { 'categories' : [ 'Fall 2008', 'Spring 2009','Fall 2009', 'Spring 2010', 'Fall 2010', 'Spring 2011'],\
+#              'undergrad' : [18, 22, 30, 34, 40, 47],\
+#              'grad' : [1, 2, 4, 4, 5, 7],\
+#              'employee' : [2, 3, 0, 1, 1, 2] }
+#     lu['total_enrolled'] = [sum(a) for a in zip(lu['undergrad'], lu['grad'],lu['employee'])]            
     return render_to_response('loansummary.html', lu, RequestContext(request))
 #===============================================================================
 # 借出明细
@@ -102,6 +132,7 @@ def loan_detail_return(request):
          return render_to_response("success.html",({'errormsg':u'不存在这条记录'}), RequestContext(request))
      tmpstatus = Returnstatus.objects.get(status = 1)
      rtn_record.status = tmpstatus
+     rtn_record.returndate = datetime.datetime.now()
      rtn_record.save()
      inreturnstatus = Returnstatus.objects.get(status = 0)
      loandtls = rtn_record.loan.loandetail_set.filter(status = inreturnstatus)
@@ -121,6 +152,7 @@ def loan_detail_no_return(request):
          return render_to_response("success.html",({'errormsg':u'不存在这条记录'}), RequestContext(request))
      tmpstatus = Returnstatus.objects.get(status = 0)
      rtn_record.status = tmpstatus
+     rtn_record.returndate = None
      rtn_record.save()
      rtn_record.loan.status = tmpstatus
      rtn_record.loan.save()

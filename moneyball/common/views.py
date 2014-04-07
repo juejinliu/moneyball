@@ -15,8 +15,12 @@ def index(request):
 
 @login_required
 def welcome(request):
-    tempstatus = Returnstatus.objects.get(status = 0)
-    today_due_list = Loandetail.objects.filter(user=request.user,status=tempstatus).order_by('expiredate')
+#     global loan_notreturnstatus #待收状态
+    loan_notreturnstatus = Returnstatus.objects.get(status = 0)
+    today_due_list = Loandetail.objects.filter(user=request.user,status=loan_notreturnstatus).order_by('expiredate')
+    insamt_sum = 0.00
+    feeamt_sum = 0.00
+    ownamt_sum = 0.00
     amount_sum = 0.00
     if today_due_list and today_due_list.count > 0:
 #         amount_sum = today_due_list.aggregate(Sum('ownamt'))['ownamt__sum']

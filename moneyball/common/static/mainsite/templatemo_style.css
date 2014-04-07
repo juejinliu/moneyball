@@ -17,6 +17,8 @@ body {
 #textnotreturn {font: .9em/1.2em Georgia, "Times New Roman", Times, serif; color: #A52A2A;}
 #textbad {font: .9em/1.2em Georgia, "Times New Roman", Times, serif; color: #FF0000; }
 
+
+
 a, a:link, a:visited { color: #0066AA; font-weight: normal; text-decoration: none }
 a:hover { color: #009933; text-decoration: none; }
 
@@ -85,7 +87,7 @@ img { margin: 0; padding: 0; border: none }
 
 #templatemo_main {
 	width: 1000px;
-	height: 750px;
+	height: 1200px;
 	overflow: hidden;
 	margin: 0 auto;
 }
@@ -138,7 +140,7 @@ a.menu_title { font-size: 18px; font-weight: bold; color: #FFFFFF; }
 	width: 20px;
 }
 
-#righ_half_content{
+#right_half_content{
 	position:relative;
 	float:right;
 	overflow:hidden;

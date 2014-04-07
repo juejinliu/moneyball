@@ -8,6 +8,105 @@
 {% block extrajs %}
 <script src="{% static 'js/jquery.js' %}"></script>
 <script src="{% static 'js/highchart/js/highcharts.js' %}"></script>
+
+<script>
+$(document).ready(function() { 
+	var options_sum ={
+        chart: {
+            renderTo: 'container_sum',
+            type: 'bar'
+        },
+        title: {
+            text: '总体数据'
+        },
+        xAxis: {
+            categories: [ '{{ sum_category|join:"','" }}']
+        },
+        yAxis: {
+            title: {
+                text: '金额（元）'
+            }
+        },
+        series: [{
+            name: '发生金额',
+            data: [{{ sum_amount|join:"," }}]
+        }]
+    } 
+
+	var options_pf ={
+        chart: {
+            renderTo: 'container_pf',
+            type: 'column'
+        },
+        title: {
+            text: '平台统计'
+        },
+        xAxis: {
+            categories: [ '{{ pf_category|join:"','" }}']
+        },
+        yAxis: {
+            title: {
+                text: '金额'
+            }
+        },
+        series: [{
+            name: '待收总额',
+            data: [{{ pf_dueallamt|join:"," }}]
+        }, {
+            name: '待收本金',
+            data: [{{ pf_dueownamt|join:"," }}]
+        }, {
+            name: '待收利息',
+            data: [{{ pf_dueinsamt|join:"," }}]
+        }, {
+            name: '已赚利息',
+            data: [{{ pf_insamt|join:"," }}]
+        }, {
+            name: '已赚奖励',
+            data: [{{ pf_awardamt|join:"," }}]
+        }, {
+            name: '总收益',
+            data: [{{ pf_incomeamt|join:"," }}]
+        }]
+    } 
+
+	var options_month ={
+        chart: {
+            renderTo: 'container_month',
+            type: 'column'
+        },
+        title: {
+            text: '月度统计'
+        },
+        xAxis: {
+            categories: [ '{{ m_category|join:"','" }}']
+        },
+        yAxis: {
+            title: {
+                text: '金额'
+            }
+        },
+        series: [{
+            name: '投标总额',
+            data: [{{ m_amount|join:"," }}]
+        }, {
+            name: '已赚利息',
+            data: [{{ m_insamt|join:"," }}]
+        }, {
+            name: '已赚奖励',
+            data: [{{ m_awardamt|join:"," }}]
+        }, {
+            name: '总收益',
+            data: [{{ m_incomeamt|join:"," }}]
+        }]
+    } 
+	 var chart1 = new Highcharts.Chart(options_sum)
+	 var chart2 = new Highcharts.Chart(options_pf)
+	 var chart3 = new Highcharts.Chart(options_month)
+});	
+    		
+    	</script>
+
 {% endblock %}
 
 {% block body %}
@@ -17,41 +116,12 @@
 <div id="templatemo_main">
 
     <div id="content"> 
-    	<div id="container" style="width:100%; height:400px;"></div>
-    	<script>
-$(document).ready(function() { 
-	var options ={
-        chart: {
-            renderTo: 'container',
-            type: 'bar'
-        },
-        title: {
-            text: 'Fruit Consumption'
-        },
-        xAxis: {
-            categories: [ '{{ categories|join:"','" }}']
-        },
-        yAxis: {
-            title: {
-                text: 'Fruit eaten'
-            }
-        },
-        series: [{
-            name: 'Jane',
-            data: [{{ total_enrolled|join:"," }}]
-        }, {
-            name: 'John',
-            data: [{{ undergrad|join:"," }}]
-        }]
-    } 
-
-
-
-
-	 var chart1 = new Highcharts.Chart(options)
-});	
-    		
-    	</script>
+    	<!--div id="container1" style="width:50%; height:200px;"> </div>
+    	<!--div id="container2" style="width:50%; margin:0px 0px 0px 200px; height:200px;"> </div>
+    	-->
+    	<div id="container_sum" style="width:100%; height:300px;"> </div>
+    	<div id="container_pf" style="width:100%; height:300px;"> </div>
+    	<div id="container_month" style="width:100%; height:300px;"> </div>
 
 	</div>
 </div>
