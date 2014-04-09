@@ -5,7 +5,7 @@ from moneyball.common.utilfun import addmonths
 from moneyball.common import widgets
 from django.forms.extras.widgets import SelectDateWidget
 from moneyball.loan.models import *
-import math,decimal
+import math
 from django.db.models import Q
 from simple_search import BaseSearchForm
  
@@ -29,7 +29,8 @@ class LoanForm(forms.Form):
     required_css_class = 'required'
     def clean_amount(self):
         amount = self.cleaned_data['amount']
-        if amount <= 0.00:
+#         print float(amount)
+        if amount <= 0:
             raise forms.ValidationError("金额必须大于0!")
         return amount
     def clean_duration(self):
@@ -39,27 +40,32 @@ class LoanForm(forms.Form):
         return duration
     def clean_insrate(self):
         insrate = self.cleaned_data['insrate']
-        if insrate <= 0.00:
+#         print float(insrate)
+        if insrate <= 0:
             raise forms.ValidationError("利率必须大于0!")
         return insrate
     def clean_continuerate(self):
         continuerate = self.cleaned_data['continuerate']
-        if continuerate < 0.0000:
+#         print float(continuerate)
+        if continuerate < 0:
             raise forms.ValidationError("续投奖励不能小于0!")
         return continuerate
     def clean_awardrate(self):
         awardrate = self.cleaned_data['awardrate']
-        if awardrate < 0.0000:
+#         print float(awardrate)
+        if awardrate < 0:
             raise forms.ValidationError("投标奖励不能小于0!")
         return awardrate
     def clean_feerate(self):
         feerate = self.cleaned_data['feerate']
-        if feerate < 0.0000:
+#         print float(feerate)
+        if feerate < 0:
             raise forms.ValidationError("管理费不能小于0!")
         return feerate
     def clean_offlinerate(self):
         offlinerate = self.cleaned_data['offlinerate']
-        if offlinerate < 0.0000:
+#         print float(offlinerate)
+        if offlinerate < 0:
             raise forms.ValidationError("线下充值奖励不能小于0!")
         return offlinerate
     def __init__(self, user, data, *args, **kwargs):
@@ -249,7 +255,7 @@ class LoanForm(forms.Form):
         la.awardamt = la.amount * la.awardrate / 100
         la.insamt = self.calinsamt(la)
         la.continuedamt = la.amount * la.continuerate / 100
-        la.feeamt = decimal.Decimal(la.insamt) * decimal.Decimal(la.feerate) / 100
+        la.feeamt = la.insamt * la.feerate / 100
         la.offlineamt = la.amount * la.offlinerate / 100
         if la.daily == '0':   #月标
             la.returndate = addmonths(la.loandate,la.duration,False)

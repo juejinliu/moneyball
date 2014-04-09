@@ -10,7 +10,16 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+import socket
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+STATIC_ROOT = os.path.join(BASE_DIR,'moneyball/common/static')
+STATIC_URL = '/common/static/'
+STATICFILES_DIRS=(
+    ("cssmainsite",os.path.join(STATIC_ROOT,'mainsite')),
+    ("csslogin",os.path.join(STATIC_ROOT,'login')),
+    ("js",os.path.join(STATIC_ROOT,'js')),
+    ("images",os.path.join(STATIC_ROOT,'images')),
+)
 
 TEMPLATE_DIRS = (
     os.path.join(os.path.dirname(__file__), 'templates').replace('\\','/'),
@@ -23,11 +32,33 @@ TEMPLATE_DIRS = (
 SECRET_KEY = 'xtdkofon6-u4rvx^+u)g^1**dg853yvzciea4b=r535_-j0=te'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+if socket.gethostname() == 'CHANGSHU2':
+    DEBUG = TEMPLATE_DEBUG = True
+else:
+    DEBUG = TEMPLATE_DEBUG = False
+    ALLOWED_HOSTS = ['moneyball.com.cn', 'www.moneyball.com.cn']
 
+#DEBUG = TEMPLATE_DEBUG = True
+ADMINS = (
+    ('chang', '13690578@qq.com'),
+)
+MANAGERS = (
+    ('chang', '13690578@qq.com'),
+)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.exmail.qq.com'
+EMAIL_PORT = 465
+EMAIL_HOST_USER = 'admin@moneyball.com.cn'
+EMAIL_HOST_PASSWORD = 'moneyball001'
+
+print '1'
 TEMPLATE_DEBUG = True
 
-ALLOWED_HOSTS = []
+#ALLOWED_HOSTS = ['58.247.181.229']
+#ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+#ALLOWED_HOSTS = ['moneyball.com.cn', 'www.moneyball.com.cn']
+
+print '2'
 
 LOGIN_URL = "/login"
 
@@ -43,7 +74,6 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'pagination',
-    'graphos',
     'moneyball.common',
     'moneyball.common.templatetags',
     'moneyball.user',
@@ -72,7 +102,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.messages.context_processors.messages',
     'django.core.context_processors.request',
 )
-
+print '3'
 ROOT_URLCONF = 'moneyball.urls'
 
 WSGI_APPLICATION = 'moneyball.wsgi.application'
@@ -85,9 +115,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'moneyball',
-        'USER': 'django',
+        'USER': 'postgres',
         'PASSWORD': '1Qaz2wsx3edc',
-        'HOST': 'localhost',
+        'HOST': 'www.moneyball.com.cn',
     }
 }
 # Internationalization
@@ -107,4 +137,3 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
-STATIC_URL = '/common/static/'

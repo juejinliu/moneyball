@@ -109,9 +109,9 @@
 {% endif %}
         	<table>
             	{{ form.as_table }}
+        		&nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" value="添加/修改" id="submit_btn">
+        		<a href="{% url 'action_all_platform' %}">&nbsp;&nbsp;&nbsp;&nbsp;清空</a>
         	</table>
-        	<input type="submit" value="添加/修改">
-        	<a href="{% url 'action_all_platform' %}"><span>清空</span>  </a>
         </div>
     </form>
         </div>

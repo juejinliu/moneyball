@@ -4,6 +4,7 @@ from moneyball.common.utilfun import *
 from django.db.models import Sum
 import decimal
 import datetime
+from datetime import timedelta
 from platform import platform
 
 class loancalc(object):
@@ -51,11 +52,11 @@ class loancalc(object):
 
 # 总奖励
     def getallaward(self):
-        ret_data = decimal.Decimal(0.00)
+        ret_data = float(0.00)
         if self.loanlist.count() > 0:
-            ret_data += self.loanlist.aggregate(Sum('awardamt'))['awardamt__sum']
-            ret_data += self.loanlist.aggregate(Sum('continuedamt'))['continuedamt__sum']
-            ret_data += self.loanlist.aggregate(Sum('offlineamt'))['offlineamt__sum']
+            ret_data += float(self.loanlist.aggregate(Sum('awardamt'))['awardamt__sum'])
+            ret_data += float(self.loanlist.aggregate(Sum('continuedamt'))['continuedamt__sum'])
+            ret_data += float(self.loanlist.aggregate(Sum('offlineamt'))['offlineamt__sum'])
         return ret_data
 
 # 当月已收利息
@@ -68,12 +69,13 @@ class loancalc(object):
         
 # 当月奖励
     def getcurrmonthaward(self):
-        ret_data = decimal.Decimal(0.00)
+        ret_data = float(0.00)
         now = datetime.datetime.now()
         if self.loanlist.count() > 0:
-            ret_data += self.loanlist.filter(loandate__year=now.year,loandate__month=now.month).aggregate(Sum('awardamt'))['awardamt__sum']
-            ret_data += self.loanlist.aggregate(Sum('continuedamt'))['continuedamt__sum']
-            ret_data += self.loanlist.aggregate(Sum('offlineamt'))['offlineamt__sum']
+            if self.loanlist.filter(loandate__year=now.year,loandate__month=now.month).count()>0:
+                ret_data += float(self.loanlist.filter(loandate__year=now.year,loandate__month=now.month).aggregate(Sum('awardamt'))['awardamt__sum'])
+            ret_data += float(self.loanlist.aggregate(Sum('continuedamt'))['continuedamt__sum'])
+            ret_data += float(self.loanlist.aggregate(Sum('offlineamt'))['offlineamt__sum'])
         return ret_data
     
 # 得到平台统计数据
@@ -108,7 +110,7 @@ class loancalc(object):
                     pf_ownamt.append(pf_status_record['sumownamt'])
                     pf_feeamt.append(pf_status_record['sumfeeamt'])
                     pf_incomeamt.append(pf_status_record['suminsamt'] - pf_status_record['sumfeeamt'])    #已收总额
-                    pf_allamt.append(pf['sumaward'] + pf_status_record['suminsamt'] + pf_status_record['sumownamt'] - pf_status_record['sumfeeamt'])    #已收总额
+                    pf_allamt.append(float(pf['sumaward']) + float(pf_status_record['suminsamt']) + float(pf_status_record['sumownamt']) - float(pf_status_record['sumfeeamt']))    #已收总额
                      
         ret_data['pfdueinsamt'] = pf_dueinsamt
         ret_data['pfdueownamt'] = pf_dueownamt
@@ -137,20 +139,20 @@ class loancalc(object):
         now = datetime.datetime.now()
         for m in range(0,-12,-1):
             targetmonth = monthdelta(now,m)
-            m_loan_amt = 0.00
-            m_loandtl_insamt = 0.00
-            m_loan_awardamt = 0.00
-            m_loandtl_incomeamt = 0.00
+            m_loan_amt = float(0.00)
+            m_loandtl_insamt = float(0.00)
+            m_loan_awardamt = float(0.00)
+            m_loandtl_incomeamt = float(0.00)
             if self.loanlist.filter(loandate__year=targetmonth.year,loandate__month=targetmonth.month).count() > 0:
-                m_loan_amt = self.loanlist.filter(loandate__year=targetmonth.year,loandate__month=targetmonth.month).aggregate(Sum('amount'))['amount__sum']
-                m_loan_awardamt = self.loanlist.filter(loandate__year=targetmonth.year,loandate__month=targetmonth.month).aggregate(Sum('awardamt'))['awardamt__sum']
-                m_loan_awardamt += self.loanlist.filter(loandate__year=targetmonth.year,loandate__month=targetmonth.month).aggregate(Sum('continuedamt'))['continuedamt__sum']
-                m_loan_awardamt += self.loanlist.filter(loandate__year=targetmonth.year,loandate__month=targetmonth.month).aggregate(Sum('offlineamt'))['offlineamt__sum']
+                m_loan_amt = float(self.loanlist.filter(loandate__year=targetmonth.year,loandate__month=targetmonth.month).aggregate(Sum('amount'))['amount__sum'])
+                m_loan_awardamt = float(self.loanlist.filter(loandate__year=targetmonth.year,loandate__month=targetmonth.month).aggregate(Sum('awardamt'))['awardamt__sum'])
+                m_loan_awardamt += float(self.loanlist.filter(loandate__year=targetmonth.year,loandate__month=targetmonth.month).aggregate(Sum('continuedamt'))['continuedamt__sum'])
+                m_loan_awardamt += float(self.loanlist.filter(loandate__year=targetmonth.year,loandate__month=targetmonth.month).aggregate(Sum('offlineamt'))['offlineamt__sum'])
             if self.loandtllist.filter(returndate__year=targetmonth.year,returndate__month=targetmonth.month,status=self.loan_returnedstatus).count() > 0:
-                m_loandtl_insamt = self.loandtllist.filter(returndate__year=targetmonth.year,returndate__month=targetmonth.month,status=self.loan_returnedstatus).aggregate(Sum('insamt'))['insamt__sum']
-                m_loandtl_feeamt = self.loandtllist.filter(returndate__year=targetmonth.year,returndate__month=targetmonth.month,status=self.loan_returnedstatus).aggregate(Sum('feeamt'))['feeamt__sum']
-                m_loandtl_insamt -= m_loandtl_feeamt
-                m_loandtl_incomeamt = m_loan_awardamt + m_loandtl_insamt
+                m_loandtl_insamt = float(self.loandtllist.filter(returndate__year=targetmonth.year,returndate__month=targetmonth.month,status=self.loan_returnedstatus).aggregate(Sum('insamt'))['insamt__sum'])
+                m_loandtl_feeamt = float(self.loandtllist.filter(returndate__year=targetmonth.year,returndate__month=targetmonth.month,status=self.loan_returnedstatus).aggregate(Sum('feeamt'))['feeamt__sum'])
+                m_loandtl_insamt -= float(m_loandtl_feeamt)
+                m_loandtl_incomeamt = float(m_loan_awardamt) + float(m_loandtl_insamt)
             m_months.append(targetmonth.strftime("%Y-%m"))
             m_amount.append(m_loan_amt)
             m_insamt.append(m_loandtl_insamt)
@@ -161,4 +163,44 @@ class loancalc(object):
         ret_data['m_insamt'] = m_insamt
         ret_data['m_awardamt'] = m_awardamt
         ret_data['m_incomeamt'] = m_incomeamt
+        return ret_data
+
+
+# 得到今天待收明细及未来30天待收数据，用于显示welcome.html中数据
+    def getmonthdue(self):
+        ret_data = {}
+        d_days = []
+        d_amount = []      #待收总额
+        now = datetime.datetime.now()
+        fromdate = datetime.date(now.year,now.month,now.day);
+        enddate = now + timedelta(days=30)
+# 当日待收明细
+        today_due_list = self.loandtllist.filter(expiredate__lte=fromdate,status=self.loan_notreturnstatus).order_by('-expiredate')
+        insamt_sum = 0.00
+        feeamt_sum = 0.00
+        ownamt_sum = 0.00
+        amount_sum = 0.00
+        if today_due_list and today_due_list.count() > 0:
+            insamt_sum = today_due_list.aggregate(Sum('insamt'))['insamt__sum']
+            ownamt_sum = today_due_list.aggregate(Sum('ownamt'))['ownamt__sum']
+            feeamt_sum = today_due_list.aggregate(Sum('feeamt'))['feeamt__sum']
+            amount_sum = float(ownamt_sum) + float(insamt_sum) - float(feeamt_sum)
+# 未来30天待收明细，用于生成柱状图        
+        dtl_list = self.loandtllist.filter(expiredate__range=(fromdate,enddate),status=self.loan_notreturnstatus).values('expiredate').annotate(sumownamt=Sum('ownamt'),suminsamt=Sum('insamt'),sumfeeamt=Sum('feeamt')).order_by('-expiredate')
+        for m in range(0,30):
+            targetday = now + datetime.timedelta(days=m)
+            d_days.append(targetday.strftime("%d"))
+            targetvalue = dtl_list.filter(expiredate=targetday)
+            tmp_amount = 0.00
+            if targetvalue:
+                for n in targetvalue:
+                    tmp_amount += float(n['sumownamt']) + float(n['suminsamt']) - float(n['sumfeeamt'])
+            d_amount.append(tmp_amount)
+        ret_data['d_days'] = d_days
+        ret_data['d_amount'] = d_amount
+        ret_data['today_due_list'] = today_due_list
+        ret_data['insamt_sum'] = insamt_sum
+        ret_data['feeamt_sum'] = feeamt_sum
+        ret_data['ownamt_sum'] = ownamt_sum
+        ret_data['amount_sum'] = amount_sum
         return ret_data

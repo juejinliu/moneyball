@@ -47,7 +47,7 @@ class Loan(models.Model):
     duration = models.IntegerField(default=1)    #借出时长,默认是月数
     loantype = models.IntegerField(default=0)    #是否秒标 0-本人投标 1-下线投标
     delegaterate = models.DecimalField(decimal_places=2,max_digits=5,default=0.00)  #代理人佣金费率
-    loandate = models.DateTimeField(auto_now_add=False)
+    loandate = models.DateField(auto_now_add=False)
     returntype = models.ForeignKey(Returntype)    #'1':'等额本息','2':'月还息到期还本','3':'到期还本息'
     status = models.ForeignKey(Returnstatus)    #0-正在还款1-已还款2-已坏账,未赔付3-坏账已赔付
     awardamt = models.DecimalField(decimal_places=2,max_digits=9,default=0.00)
@@ -80,8 +80,8 @@ class Loandetail(models.Model):
     ownamt = models.DecimalField(decimal_places=2,max_digits=9,default=0.00)
     feeamt = models.DecimalField(decimal_places=2,max_digits=9,default=0.00)
     insrate = models.DecimalField(decimal_places=2,max_digits=5,default=0.00)
-    loandate = models.DateTimeField(auto_now_add=False)
-    expiredate = models.DateTimeField(auto_now_add=False)
+    loandate = models.DateField(auto_now_add=False)
+    expiredate = models.DateField(auto_now_add=False)
     status = models.ForeignKey(Returnstatus)    #0-正在还款1-已还款2-已坏账,未赔付3-坏账已赔付
     returndate = models.DateField(blank=True,null=True)             #回款日期
     latecharge = models.DecimalField(decimal_places=2,max_digits=9,default=0.00)

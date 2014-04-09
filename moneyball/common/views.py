@@ -9,6 +9,8 @@ from django.template import RequestContext
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from moneyball.loan.models import *
 from django.db.models import Sum
+from moneyball.loan.loancalc import *
+from locale import LC_ALL
 # Create your views here.
 def index(request):
     return render_to_response('index.html')
@@ -16,26 +18,35 @@ def index(request):
 @login_required
 def welcome(request):
 #     global loan_notreturnstatus #待收状态
-    loan_notreturnstatus = Returnstatus.objects.get(status = 0)
-    today_due_list = Loandetail.objects.filter(user=request.user,status=loan_notreturnstatus).order_by('expiredate')
-    insamt_sum = 0.00
-    feeamt_sum = 0.00
-    ownamt_sum = 0.00
-    amount_sum = 0.00
-    if today_due_list and today_due_list.count > 0:
-#         amount_sum = today_due_list.aggregate(Sum('ownamt'))['ownamt__sum']
-#         amount_sum += today_due_list.aggregate(Sum('insamt'))['insamt__sum']
-#         amount_sum -= today_due_list.aggregate(Sum('feeamt'))['feeamt__sum']
-        insamt_sum = today_due_list.aggregate(Sum('insamt'))['insamt__sum']
-        ownamt_sum = today_due_list.aggregate(Sum('ownamt'))['ownamt__sum']
-        feeamt_sum = today_due_list.aggregate(Sum('feeamt'))['feeamt__sum']
-        amount_sum = ownamt_sum + insamt_sum - feeamt_sum
-    return render_to_response('welcome.html', {"today_due_list": today_due_list,
-                                               "record_number": today_due_list.count,
-                                               "insamt_sum": insamt_sum,
-                                               "ownamt_sum": ownamt_sum,
-                                               "feeamt_sum": feeamt_sum,
-                                               "amount_sum":amount_sum,}, RequestContext(request))
+#     loan_notreturnstatus = Returnstatus.objects.get(status = 0)
+#     today_due_list = Loandetail.objects.filter(user=request.user,status=loan_notreturnstatus).order_by('expiredate')
+#     insamt_sum = 0.00
+#     feeamt_sum = 0.00
+#     ownamt_sum = 0.00
+#     amount_sum = 0.00
+#     if today_due_list and today_due_list.count > 0:
+# #         amount_sum = today_due_list.aggregate(Sum('ownamt'))['ownamt__sum']
+# #         amount_sum += today_due_list.aggregate(Sum('insamt'))['insamt__sum']
+# #         amount_sum -= today_due_list.aggregate(Sum('feeamt'))['feeamt__sum']
+#         insamt_sum = today_due_list.aggregate(Sum('insamt'))['insamt__sum']
+#         ownamt_sum = today_due_list.aggregate(Sum('ownamt'))['ownamt__sum']
+#         feeamt_sum = today_due_list.aggregate(Sum('feeamt'))['feeamt__sum']
+#         amount_sum = ownamt_sum + insamt_sum - feeamt_sum
+    lc = loancalc(request.user)
+    p_list = lc.getmonthdue()
+    lu = {}
+    lu['due_category'] = p_list['d_days']
+    lu['due_amount'] = p_list['d_amount']
+    
+    lu['today_due_list'] = p_list['today_due_list']
+    lu['record_number'] = p_list['today_due_list'].count()
+    lu['insamt_sum'] = p_list['insamt_sum']
+    lu['ownamt_sum'] = p_list['ownamt_sum']
+    lu['feeamt_sum'] = p_list['feeamt_sum']
+    lu['ownamt_sum'] = p_list['ownamt_sum']
+    lu['amount_sum'] = p_list['amount_sum']
+    del lc
+    return render_to_response('welcome.html', lu, RequestContext(request))
 
 def wxfocus(request):
     return render_to_response('overall_template.html')

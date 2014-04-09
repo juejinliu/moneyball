@@ -1,9 +1,11 @@
 {% extends 'basic_template.html' %}
 {% load i18n %}
+{% load staticfiles %}
 
 {% block body %}
+<body style="margin: 0;	padding: 0;font-size: 12px;line-height: 1.6em;	font-family: sans-serif;	background-image:url({% static "images/templatemo_body.jpg" %});	background-position: top;background-repeat: repeat-x">
 <div class="column">
-	<h2>{% trans "Whoops! We can't find what you're looking for" %}</h2>
-	<p>{% trans "It looks like you've tried to get to a page that doesn't exist." %}</p>
+	<h2>{% trans "不好意思，没有找到你请求的页面" %}</h2>
+	<p>{% trans "这个好像出错了，不知道怎么回事" %}</p>
 </div>
 {% endblock body %}

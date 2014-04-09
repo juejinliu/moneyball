@@ -9,8 +9,8 @@ from django.contrib.auth.decorators import login_required
 from moneyball.loan.models import Loan
 from django.db.models import Sum
 from moneyball.loan.models import *
-from graphos.sources.model import ModelDataSource
-from graphos.renderers import flot
+# from graphos.sources.model import ModelDataSource
+# from graphos.renderers import flot
 from django.template.loader import render_to_string
 from moneyball.loan.loancalc import * 
 import json
@@ -32,16 +32,16 @@ def loansummary(request):
     lc = loancalc(request.user)
     dueallown = lc.getdueallown()
     dueallins = lc.getdueallins()
-    dueallamt = dueallown + dueallins
+    dueallamt = float(dueallown) + float(dueallins)
 #     dueallown = lc.getdueallown()
     allins = lc.getallins()
     allfee = lc.getallfee()
     allaward = lc.getallaward()
-    allincome = allins - allfee + allaward
+    allincome = float(allins) - float(allfee) + float(allaward)
 
     currmonthins = lc.getcurrmonthins()
     currmonthaward = lc.getcurrmonthaward()
-    currincome = currmonthins + currmonthaward
+    currincome = float(currmonthins) + float(currmonthaward)
     lu = { 'sum_category': ['当月收益','当月利息','当月奖励','总收益', '总利息','总奖励', '待收本金' ,'待收利息','待收总额']}
     lu['sum_amount'] =[ currincome, currmonthins, currmonthaward, allincome, allins, allaward,dueallown ,dueallins,dueallamt]
     
@@ -114,7 +114,7 @@ def loandetaillist(request):
         pass
     else:
         loandetail_list = Loandetail.objects.filter(user=request.user).order_by('-expiredate')
-    record_number = loandetail_list.count
+    record_number = loandetail_list.count()
     ownamt_sum = loandetail_list.aggregate(Sum('ownamt'))['ownamt__sum']
     insamt_sum = loandetail_list.aggregate(Sum('insamt'))['insamt__sum']
     feeamt_sum = loandetail_list.aggregate(Sum('feeamt'))['feeamt__sum']
