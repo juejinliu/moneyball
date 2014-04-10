@@ -55,8 +55,9 @@ class Loan(models.Model):
     continuedamt = models.DecimalField(decimal_places=2,max_digits=9,default=0.00)
     feeamt = models.DecimalField(decimal_places=2,max_digits=9,default=0.00)
     offlineamt = models.DecimalField(decimal_places=2,max_digits=9,default=0.00)
-    returndate = models.DateField()
+    returndate = models.DateField(blank=True,null=True)
     comments = models.CharField(blank=True,null=True,max_length=300)
+    oldid = models.IntegerField()
             
     def __unicode__(self):
         return unicode(self.user)

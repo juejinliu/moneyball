@@ -42,8 +42,9 @@ def loansummary(request):
     currmonthins = lc.getcurrmonthins()
     currmonthaward = lc.getcurrmonthaward()
     currincome = float(currmonthins) + float(currmonthaward)
-    lu = { 'sum_category': ['当月收益','当月利息','当月奖励','总收益', '总利息','总奖励', '待收本金' ,'待收利息','待收总额']}
-    lu['sum_amount'] =[ currincome, currmonthins, currmonthaward, allincome, allins, allaward,dueallown ,dueallins,dueallamt]
+    lu = { 'sum_category': ['当月收益','当月利息','当月奖励','总收益', '总利息','总奖励','管理费', '待收本金' ,'待收利息','待收总额']}
+    lu['sum_amount'] =[ currincome, currmonthins, currmonthaward, allincome, allins, allaward,allfee,dueallown ,dueallins,dueallamt]
+    
     
     pf_list = lc.getpfsummary()
     lu['pf_category'] = pf_list['pfnames']
@@ -349,3 +350,11 @@ def loandetaillist(request):
                                                 "insamt_sum":insamt_sum,
                                                 "feeamt_sum":feeamt_sum})
                               )
+# 用于更新导入明细数据中的loan_id
+def update_loandtl_loanid(request):
+    dtls = Loandetail.objects.filter(user=5)
+    for dtl in dtls:
+        loan = Loan.objects.get(oldid=dtl.loan_id)
+        dtlobj = Loandetail.objects.get(id = dtl.id)
+        dtlobj.loan_id = loan.id
+        dtlobj.save()

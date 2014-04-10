@@ -14,6 +14,8 @@ class loancalc(object):
         self.loan_returnedstatus = Returnstatus.objects.get(status = 1)     #已回款状态
         self.loandtllist = Loandetail.objects.filter(user=self.user) 
         self.loanlist = Loan.objects.filter(user=self.user)
+        
+           
     
 # 待收本金
     def getdueallown(self):
@@ -38,14 +40,14 @@ class loancalc(object):
 
 # 总利息
     def getallins(self):
-        ret_data = self.loandtllist.aggregate(Sum('insamt'))['insamt__sum']
+        ret_data = self.loandtllist.filter(status=self.loan_returnedstatus).aggregate(Sum('insamt'))['insamt__sum']
         if not ret_data:
             ret_data = 0.00
         return ret_data
 
 # 总手管理费
     def getallfee(self):
-        ret_data = self.loandtllist.aggregate(Sum('feeamt'))['feeamt__sum']
+        ret_data = self.loandtllist.filter(status=self.loan_returnedstatus).aggregate(Sum('feeamt'))['feeamt__sum']
         if not ret_data:
             ret_data = 0.00
         return ret_data
@@ -109,9 +111,9 @@ class loancalc(object):
                     pf_insamt.append(pf_status_record['suminsamt'])
                     pf_ownamt.append(pf_status_record['sumownamt'])
                     pf_feeamt.append(pf_status_record['sumfeeamt'])
-                    pf_incomeamt.append(pf_status_record['suminsamt'] - pf_status_record['sumfeeamt'])    #已收总额
+                    pf_incomeamt.append(pf_status_record['suminsamt'] + pf['sumaward'] - pf_status_record['sumfeeamt'])    #已收总额
                     pf_allamt.append(float(pf['sumaward']) + float(pf_status_record['suminsamt']) + float(pf_status_record['sumownamt']) - float(pf_status_record['sumfeeamt']))    #已收总额
-                     
+                 
         ret_data['pfdueinsamt'] = pf_dueinsamt
         ret_data['pfdueownamt'] = pf_dueownamt
         ret_data['pfduefeeamt'] = pf_duefeeamt
@@ -204,3 +206,4 @@ class loancalc(object):
         ret_data['ownamt_sum'] = ownamt_sum
         ret_data['amount_sum'] = amount_sum
         return ret_data
+    

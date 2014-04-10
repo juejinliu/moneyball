@@ -51,14 +51,12 @@ EMAIL_PORT = 465
 EMAIL_HOST_USER = 'admin@moneyball.com.cn'
 EMAIL_HOST_PASSWORD = 'moneyball001'
 
-print '1'
 TEMPLATE_DEBUG = True
 
 #ALLOWED_HOSTS = ['58.247.181.229']
 #ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 #ALLOWED_HOSTS = ['moneyball.com.cn', 'www.moneyball.com.cn']
 
-print '2'
 
 LOGIN_URL = "/login"
 
@@ -102,7 +100,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.messages.context_processors.messages',
     'django.core.context_processors.request',
 )
-print '3'
 ROOT_URLCONF = 'moneyball.urls'
 
 WSGI_APPLICATION = 'moneyball.wsgi.application'
