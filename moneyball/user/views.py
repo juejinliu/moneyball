@@ -67,7 +67,7 @@ def iforgot(request):
     if request.method == 'POST':
         form = PasswordResetForm(request.POST)
         if form.is_valid():
-            user = form.save()
+            user = form.save(request=request)
             return render_to_response("login.html",({'infomsg':u'已发送重置邮件到您信箱'}), RequestContext(request))
         else:
             # Show an error page

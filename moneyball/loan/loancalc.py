@@ -94,12 +94,12 @@ class loancalc(object):
         pf_dueallamt = []   #待收总额
         pf_incomeamt = []   #总收益
         pf_allamt = []      #已回收总金额
-        pf_loan_amt = self.loanlist.values('platform').annotate(sumamt=Sum('amount'),sumaward=Sum('awardamt')).order_by('platform')
+        pf_loan_amt = self.loanlist.values('platform').annotate(sumamt=Sum('amount'),sumaward=Sum('awardamt'),sumcontinuedamt=Sum('continuedamt'),sumofflineamt=Sum('offlineamt')).order_by('platform')
         for pf in pf_loan_amt:
             pf_id = pf['platform']
             pf_name = Platform.objects.get(id=pf_id)
             pf_names.append(pf_name)
-            pf_awardamt.append(pf['sumaward'])
+            pf_awardamt.append(pf['sumaward']+pf['sumcontinuedamt']+pf['sumofflineamt'])
             pf_dtlamt = self.loandtllist.filter(platform=pf_id).values('status').annotate(suminsamt=Sum('insamt'),sumfeeamt=Sum('feeamt'),sumownamt=Sum('ownamt'))
             for pf_status_record in pf_dtlamt:  #这个地方只循环两次，如果有坏账就循环3次
                 if pf_status_record['status'] == self.loan_notreturnstatus.id:
@@ -111,8 +111,8 @@ class loancalc(object):
                     pf_insamt.append(pf_status_record['suminsamt'])
                     pf_ownamt.append(pf_status_record['sumownamt'])
                     pf_feeamt.append(pf_status_record['sumfeeamt'])
-                    pf_incomeamt.append(pf_status_record['suminsamt'] + pf['sumaward'] - pf_status_record['sumfeeamt'])    #已收总额
-                    pf_allamt.append(float(pf['sumaward']) + float(pf_status_record['suminsamt']) + float(pf_status_record['sumownamt']) - float(pf_status_record['sumfeeamt']))    #已收总额
+                    pf_incomeamt.append(pf_status_record['suminsamt'] + pf['sumaward'] +pf['sumcontinuedamt']+pf['sumofflineamt'] - pf_status_record['sumfeeamt'])    #已收总额 = 利息+奖励-管理费
+                    pf_allamt.append(float(pf['sumaward']) +float(pf['sumcontinuedamt'])+float(pf['sumofflineamt']) + float(pf_status_record['suminsamt']) + float(pf_status_record['sumownamt']) - float(pf_status_record['sumfeeamt']))    #已收总额
                  
         ret_data['pfdueinsamt'] = pf_dueinsamt
         ret_data['pfdueownamt'] = pf_dueownamt

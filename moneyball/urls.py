@@ -1,5 +1,6 @@
+# -*- coding: utf-8 -*-
 from django.conf.urls import patterns, include, url
-
+from django.views.generic import TemplateView
 from django.contrib import admin
 admin.autodiscover()
 
@@ -11,6 +12,7 @@ urlpatterns = patterns('',
     (r'^wxfocus/$', 'moneyball.common.views.wxfocus'),
     (r'^user/', include('moneyball.user.urls')),
     (r'^loan/', include('moneyball.loan.urls')),
+    (r'^wx/', include('moneyball.wx.urls')),
     #(r'^accounts/', include('moneyball.accounts.urls')),
     #(r'^creditcard/', include('moneyball.creditcard.urls')),
     #(r'^moneyflow/', include('moneyball.moneyflow.urls')),
@@ -18,6 +20,5 @@ urlpatterns = patterns('',
     # Examples:
     # url(r'^$', 'moneyball.views.home', name='home'),
     # url(r'^blog/', include('blog.urls')),
-
     url(r'^admin/', include(admin.site.urls)),
 )

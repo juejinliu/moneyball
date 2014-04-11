@@ -1,0 +1,63 @@
+{% extends "basic_template.html" %}
+{% load pagination_tags %}
+{% load poll_extras %}
+{% autopaginate object_list 20%}
+{% load staticfiles %}
+{% load i18n %}
+{% load cache %}
+{% block extracss %}
+{% endblock %}
+{% block extrajs %}
+{% endblock %}
+
+{% block menu %}
+
+{% if user.is_authenticated %}  
+	<strong>{{ user.username }}</strong>
+	<a href="/user/profile" >修改个人信息</a>
+	<a href="/user/passwordset" >修改密码</a>
+	<a href="/logout" >退出</a>
+{% else %}
+	 请<a href="/login" >登录</a>
+{% endif %}
+
+<div id="templatemo_header">
+    <div id="site_title"><a style="display: block; width: 950px; background: #717171; padding-left: 20px" href="" rel="nofollow">Money Ball</a></div>
+</div>
+
+	<style type='text/css'>
+		body{margin:0px;padding:0px;font-size:12px;}
+		ul,li,ol{margin:0px;padding:0px;list-style:none;}
+		a{text-decoration: none;}
+		img{border:0px;}
+		
+		.P9CHead{width:100%;height:30px;border-bottom:0px solid #315880;}
+		.P9CHContent,.P9CSContent{width:800px;height:100%;margin:0 auto;}
+		.P9CCLogo{width:300px;height:100%;overflow:hidden;float: left;}
+		.P9CCLogo a{float: left;position: relative;top:0px;}
+		.P9CCLogo a:hover{opacity:0.8;}
+		
+		.P9CCMenu{float: right;height:100%;}
+		.P9CCMNav,.P9CCMBg{width:120px;height:100%;float: left;margin-left:1px;text-align: center;position:relative;}
+		.P9CCMBg{background:#6495ED;left:120px;}
+		.P9CCMNav a,.P9CCMNav em{position:absolute;display:block;width:100%;float: left;left:0px;;top:0px;color:#000000;}
+		.P9CCMNav a{font-family:微软雅黑;display:none;font-size:15px;}
+		.P9CCMNav em{font-style: normal;font-size:12px;font-family:Arial;}
+
+		.P9CSubNav{background:#ffffff;width:100%;height:20px;line-height:20px;border-bottom:1px solid #c67e00;overflow:hidden;}
+		.P9CSContent{position: relative;height:100%;overflow: hidden;}
+		.P9CCNav{width:100%;height:50%;text-align:right;position:absolute;top:0px;}
+		.P9CCNav a{color:#8B0000;margin-left:30px;font-size:14px;}
+
+	</style>
+{% endblock menu %}
+{% block body %}
+{% endblock body %}
+
+{% block footer %}
+<div id="templatemo_footer_wrapper">
+	<div id="templatemo_footer">
+    	<p>Copyright © 2014 Money Ball</p>
+    </div>
+</div>
+{% endblock %}
