@@ -2,10 +2,19 @@
 import hashlib
 import xml.etree.ElementTree as ET
 import urllib2
+from moneyball.wx.models import Wxautoreply
+from moneyball.loan.views import loan_detail_return_core
+from moneyball.loan.models import *
+from moneyball.user.models import *
+import copy
+from datetime import timedelta
 # import requests
 import json
 import datetime
+from locale import str
+from test.test_iterlen import len
 from django.http.response import HttpResponse
+from moneyball.loan.loancalc import *
 global WX_TXT_RSP # 纯文本格式
 WX_TXT_RSP = """<xml>
              <ToUserName><![CDATA[%s]]></ToUserName>
@@ -56,29 +65,180 @@ def response_msg(request):
     """
     # 拿到并解析数据
     msg = parse_msg(request)
+    echostr = '出错了'
     # 判断MsgType内容，如果是一条“subscribe”的event，表明是一个新关注用户
     # 和电影海报组成的图文信息
     if msg["MsgType"] == "event":
-        echostr = WX_TXT_RSP % (
-            msg['FromUserName'], msg['ToUserName'], datetime.datetime.now(),
-            u"欢迎关注！")
+        try:
+            content = Wxautoreply.objects.get(code='command').content
+        except Wxautoreply.DoesNotExist:
+            content = u'请发送命令至本微信号查询待收明细等'
+        echostr = WX_TXT_RSP % (msg['FromUserName'], msg['ToUserName'], datetime.datetime.now(),content)
         return echostr
     if msg["MsgType"] == "text":
         receive_content =msg["Content"]
-#         if receive_content == 'bd':
-            
-        Content = handle_text_msg(msg)
-        echostr = WX_TXT_RSP % ( msg['FromUserName'], msg['ToUserName'], datetime.datetime.now(),Content)
-#         description = query_movie_details()
-#         echostr = pictextTpl % (msg['FromUserName'], msg['ToUserName'], str(int(time.time())),
-#                                 Content["subjects"][0]["title"], description,
-#                                 Content["subjects"][0]["images"]["large"], Content["subjects"][0]["alt"])
-        return echostr
+        receive_content_code = copy.copy(receive_content[0:2])
+        if receive_content_code.lower() == 'bd':     #绑定微信号
+            echostr = wxbindreply(msg)
+        elif receive_content_code.lower() == 'jb':     #解绑微信号
+            echostr = wxunbindreply(msg)
+        elif receive_content_code.lower() == 'ds':     #查询当日待收
+            echostr = wxquerydue(msg)
+        elif receive_content.lower() == 'hkall':     #回款当天所有
+            echostr = wxloanreturn(msg)
+        elif receive_content_code.lower() == 'hk':     #回款特定记录
+            dtlid= copy.copy(receive_content[2:len(receive_content)])
+            if len(receive_content) <= 2:
+                echostr = WX_TXT_RSP % (msg['FromUserName'], msg['ToUserName'], datetime.datetime.now(),u'请输入待收编号')
+            elif not dtlid.isdigit():
+                echostr = WX_TXT_RSP % (msg['FromUserName'], msg['ToUserName'], datetime.datetime.now(),u'请输入正确待收编号')
+            else:
+                echostr = wxloanreturn(msg,receive_content[2:len(receive_content)])
+        elif receive_content_code.lower() == 'hz':     #汇总
+            echostr = wxloansummary(msg)
+        else:
+            try:
+                content = Wxautoreply.objects.get(code='command').content
+            except Wxautoreply.DoesNotExist:
+                content = u'未知错误，请发送截图给本微信号'
+            echostr = WX_TXT_RSP % (msg['FromUserName'], msg['ToUserName'], datetime.datetime.now(),content)
+    if echostr == 'NONE_WEIXINID':            #如果没有绑定微信号
+        echostr = wxbindreply(msg)
+    return echostr
 
-def handle_text_msg(msg):
-    content = msg["Content"]
-    if content == 'bd':
-        return '需要绑定'
+# 查询当前用户汇总信息
+def wxloansummary(msg):
+    try:
+        myusers = MyUser.objects.filter(wxid=msg['FromUserName'])
+    except MyUser.DoesNotExist:
+        return 'NONE_WEIXINID'
+    if not myusers or myusers.count()==0:
+        return 'NONE_WEIXINID'
+    rtntxt = ''
+    for myuser in myusers:
+        lc = loancalc(myuser.user)
+        dueallown = lc.getdueallown()
+        dueallins = lc.getdueallins()
+        dueallamt = float(dueallown) + float(dueallins)
+        allins = lc.getallins()
+        allfee = lc.getallfee()
+        allaward = lc.getallaward()
+        allincome = float(allins) - float(allfee) + float(allaward)
+
+        currmonthins = lc.getcurrmonthins()
+        currmonthaward = lc.getcurrmonthaward()
+        currincome = float(currmonthins) + float(currmonthaward)
+        rtntxt += u"您用户名为" + myuser.user.username + u"的汇总账务信息如下：\n"
+        rtntxt += u"当月收益   :"+ str(currincome) +"\n"
+        rtntxt += u"当月利息   :"+ str(currmonthins) +"\n"
+        rtntxt += u"当月奖励   :"+ str(currmonthaward) +"\n"
+        rtntxt += u"总收益   :"+ str(allincome) +"\n"
+        rtntxt += u"当月收益   :"+ str(allins) +"\n"
+        rtntxt += u"总利息   :"+ str(currincome) +"\n"
+        rtntxt += u"总奖励   :"+ str(allaward) +"\n"
+        rtntxt += u"管理费   :"+ str(allfee) +"\n"
+        rtntxt += u"待收本金   :"+ str(dueallown) +"\n"
+        rtntxt += u"待收利息   :"+ str(dueallins) +"\n"
+        rtntxt += u"待收总额   :"+ str(dueallamt) +"\n"
+    result = WX_TXT_RSP % ( msg['FromUserName'], msg['ToUserName'], datetime.datetime.now(),rtntxt)
+    return result
+
+# 设置当日待收全部回款
+def wxloanreturn(msg,loandtlid = None):
+    try:
+        myusers = MyUser.objects.filter(wxid=msg['FromUserName']).values_list('user', flat=True)
+    except MyUser.DoesNotExist:
+        return 'NONE_WEIXINID'
+    if not myusers or myusers.count()==0:
+        return 'NONE_WEIXINID'
+    if loandtlid:
+        rtn = loan_detail_return_core(loandtlid)
+        rtntxt = "编号为" + loandtlid + "待收回款成功";
+    else:
+        now = datetime.datetime.now()
+        loan_notreturnstatus = Returnstatus.objects.get(status = 0)
+        loandtllist = Loandetail.objects.filter(user__in=myusers,expiredate__lte=now,status=loan_notreturnstatus).order_by('expiredate')
+        for loandtl in loandtllist:
+            rtn = loan_detail_return_core(loandtl.id)
+        rtntxt = "当天"+ str(loandtllist.count()) +"笔待收全部回款成功";
+    result = WX_TXT_RSP % ( msg['FromUserName'], msg['ToUserName'], datetime.datetime.now(),rtntxt)
+    return result
+
+# 查询当日明天待收明细
+def wxquerydue(msg):
+    try:
+        myusers = MyUser.objects.filter(wxid=msg['FromUserName']).values_list('user', flat=True)
+    except MyUser.DoesNotExist:
+        return 'NONE_WEIXINID'
+    if not myusers or myusers.count()==0:
+        return 'NONE_WEIXINID'
+    rtntxt = u"""您今天待收明细:
+        ------------------------------------\n"""
+#     myusersname = myusers.user.username
+    now = datetime.datetime.now()
+    tommorow = now + timedelta(days=1)
+    
+    loan_notreturnstatus = Returnstatus.objects.get(status = 0)
+#     当天明细
+    loandtllist = Loandetail.objects.filter(user__in=myusers,expiredate__lte=now,status=loan_notreturnstatus).order_by('expiredate')
+    if loandtllist and loandtllist.count()>0:
+        sumamt = 0
+        for loandtl in loandtllist:
+            sumamt += loandtl.ownamt + loandtl.insamt - loandtl.feeamt
+            rtntxt += str(loandtl.id) 
+            rtntxt += '   ' + loandtl.platform.name 
+            rtntxt += '   ' + str(loandtl.ownamt + loandtl.insamt - loandtl.feeamt) + '\n'
+        rtntxt += "------------------------------------\n"
+        rtntxt += u"共[" + str(loandtllist.count()) + u"]笔,总金额:" + str(sumamt) +"\n"
+    else:
+        rtntxt += u"没有明细\n"
+# 明天待收    
+    rtntxt += u"\n您明天待收明细:\n";
+    rtntxt += "------------------------------------\n";
+    loandtllist = Loandetail.objects.filter(user__in=myusers,expiredate=tommorow,status=loan_notreturnstatus)
+    if loandtllist and loandtllist.count()>0:
+        sumamt = 0
+        for loandtl in loandtllist:
+            sumamt += loandtl.ownamt + loandtl.insamt - loandtl.feeamt
+            rtntxt += str(loandtl.id) + '   ' + loandtl.platform.name + '   ' + str(loandtl.ownamt + loandtl.insamt - loandtl.feeamt)
+        rtntxt += "------------------------------------\n"
+        rtntxt = rtntxt + u"共["+ str(loandtllist.count()) + u"]笔,总金额:" + str(sumamt) +"\n"
+    else:
+        rtntxt += u"没有明细\n"
+    result = WX_TXT_RSP % ( msg['FromUserName'], msg['ToUserName'], datetime.datetime.now(),rtntxt)
+    return result
+
+def wxbindreply(msg):
+    try:
+        bindURL = Wxautoreply.objects.get(code='bindURL').content + msg['FromUserName']
+    except Wxautoreply.DoesNotExist:
+        bindURL = 'http://moneyball.com.cn/bindWeixinID?wx_id=' + msg['FromUserName']
+        
+    try:
+        picURL = Wxautoreply.objects.get(code='PicUrl').content
+    except Wxautoreply.DoesNotExist:
+        picURL = 'http://moneyball.com.cn/common/static/images/mb06.png'
+    rtntxt = WX_PIC_TXT_RSP % (msg['FromUserName'], msg['ToUserName'], datetime.datetime.now(),
+                             u'您未绑定微信号，点击绑定',u'点击输入用户名密码，验证成功则将微信号与账户绑定。点击绑定',
+                             picURL , bindURL)
+    return rtntxt
+
+def wxunbindreply(msg):
+    try:
+        unbindURL = Wxautoreply.objects.get(code='unBindURL').content + msg['FromUserName']
+    except Wxautoreply.DoesNotExist:
+        unbindURL = 'http://moneyball.com.cn/unBindWeixinID?wx_id=' + msg['FromUserName']
+        
+    try:
+        picURL = Wxautoreply.objects.get(code='PicUrl').content
+    except Wxautoreply.DoesNotExist:
+        picURL = 'http://moneyball.com.cn/common/static/images/mb06.png'
+
+    rtntxt = WX_PIC_TXT_RSP % (msg['FromUserName'], msg['ToUserName'], datetime.datetime.now(),
+                             u'您确定要解除账户绑定吗？',u'点击输入用户名密码，验证成功则解除微信号与账户的绑定。点击解绑',
+                             picURL , unbindURL)
+    return rtntxt
+
 
 def checkSignature(request):
     """

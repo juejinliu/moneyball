@@ -73,6 +73,7 @@ LOGIN_URL = "/login"
 LOGIN_REDIRECT_URL = "/login"
 
 # Application definition
+# AUTH_USER_MODEL = 'user.MyUser'
 
 INSTALLED_APPS = (
     'django.contrib.admin',
@@ -86,6 +87,7 @@ INSTALLED_APPS = (
     'moneyball.common.templatetags',
     'moneyball.user',
     'moneyball.loan',
+    'moneyball.wx',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -124,7 +126,8 @@ DATABASES = {
         'NAME': 'moneyball',
         'USER': 'postgres',
         'PASSWORD': '1Qaz2wsx3edc',
-        'HOST': 'www.moneyball.com.cn',
+#         'HOST': 'www.moneyball.com.cn',
+        'HOST': 'localhost',
     }
 }
 # Internationalization

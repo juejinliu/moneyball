@@ -128,22 +128,27 @@ def loandetaillist(request):
 @login_required
 def loan_detail_return(request):
      try:
-         rtn_record = Loandetail.objects.get(id=request.GET['Loan_detail_id'])
+         loan_detail_return_core(request.GET['Loan_detail_id'])
      except Loandetail.DoesNotExist:
          return render_to_response("success.html",({'errormsg':u'不存在这条记录'}), RequestContext(request))
-     tmpstatus = Returnstatus.objects.get(status = 1)
-     rtn_record.status = tmpstatus
-     rtn_record.returndate = datetime.datetime.now()
-     rtn_record.save()
-     inreturnstatus = Returnstatus.objects.get(status = 0)
-     loandtls = rtn_record.loan.loandetail_set.filter(status = inreturnstatus)
-     if not loandtls:  #如果这个借款记录关联的所有明细都还清则把这调记录标记为已还清
-         rtn_record.loan.status = tmpstatus
-         rtn_record.loan.save()
      previousurl = request.META['HTTP_REFERER']
 #     print tmpurl
      return HttpResponseRedirect(previousurl)
 #     return HttpResponseRedirect('/welcome')
+
+#微信也用这个函数，所以不需要login
+def loan_detail_return_core(detail_id):
+    rtn_record = Loandetail.objects.get(id=detail_id)
+    if rtn_record:
+        tmpstatus = Returnstatus.objects.get(status = 1)
+        rtn_record.status = tmpstatus
+        rtn_record.returndate = datetime.datetime.now()
+        rtn_record.save()
+        inreturnstatus = Returnstatus.objects.get(status = 0)
+        loandtls = rtn_record.loan.loandetail_set.filter(status = inreturnstatus)
+        if not loandtls:  #如果这个借款记录关联的所有明细都还清则把这调记录标记为已还清
+            rtn_record.loan.status = tmpstatus
+            rtn_record.loan.save()
 
 @login_required
 def loan_detail_no_return(request):
@@ -287,6 +292,7 @@ def getplatformfee(request):
             #    raise Http404
     return HttpResponse(json.dumps(items_dict), content_type="application/json" )
 
+#借款记录查询
 @login_required
 def loanlist(request):
     record_number = 0
@@ -320,7 +326,7 @@ def loanlist(request):
                                                 "feeamt_sum":feeamt_sum})
                               )
 
-
+# 待收明细查询
 @login_required
 def loandetaillist(request):
     record_number = 0

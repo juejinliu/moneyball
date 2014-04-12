@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*- 
 from django.db import models
 from django.contrib.auth.models import User
+from moneyball.user.models import MyUser
 from django.template.loader import render_to_string
 
 class Booleancode(models.Model):
@@ -57,7 +58,7 @@ class Loan(models.Model):
     offlineamt = models.DecimalField(decimal_places=2,max_digits=9,default=0.00)
     returndate = models.DateField(blank=True,null=True)
     comments = models.CharField(blank=True,null=True,max_length=300)
-    oldid = models.IntegerField()
+#     oldid = models.IntegerField()
             
     def __unicode__(self):
         return unicode(self.user)
