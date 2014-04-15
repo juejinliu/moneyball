@@ -3,5 +3,6 @@ from django.conf.urls import *
 
 urlpatterns = patterns('moneyball.wx.views',
     url(r'^$', 'weixin', name='weixin'),
-    url(r'^(?P<wxid>\d+)/$', 'weixin', name='add_update_one_loan'),
+#     url(r'^bindwxid/\?action=.+\?wxid=.+/$', 'bindwxid', name='bind_weixin_id'),
+    url(r'^bindwxid/', 'bindwxid', name='bind_weixin_id'),
 )

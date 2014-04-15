@@ -4,7 +4,6 @@
 {% block pagetitle %}微信{% endblock %}
 
 {% block extrajs %}
-<script type="text/javascript" src="{% static "media/js/index.js" %}"></script>
 {% endblock %}
 
 {% block body %}
@@ -14,7 +13,7 @@
             <h1>微信平台介绍</h1>
             <div class="half left">
                 <div class="img_border img_fl">
-                    <img src="images/weixin_barcode_small.jpg" alt="weixin" />	
+                    <img src={% static "images/weixin_barcode_small.jpg" %} alt="weixin" />	
                 </div>
                 <p align="justify"><em>微信订阅号<strong>“理财平台”</strong></em></p>
                 <p align="justify">通过关注微信订阅号“理财平台”可以微信查询您的实时账务信息，近日待收明细，并设置回款等操作.
@@ -38,7 +37,7 @@
       <div class="section section_with_padding" id="about"> 
             <div class="half left">
                  <div class="img_border img_fr">
-                    <img src="images/css_weixin_small.jpg" alt="css" />	
+                    <img src={% static "images/css_weixin_small.jpg" %} alt="css" />	
                 </div>
                 <p align="justify">关注站长微信号，可以实时与站长沟通，提出您的建议.</p>
 			</div>
@@ -55,6 +54,6 @@
 
                 
            
-            <a href="view_welcome" class="home_btn">home</a> 
+            <a href="/welcome" class="home_btn">home</a> 
 </div> 
 {% endblock %}

@@ -36,7 +36,8 @@ def welcome(request):
     p_list = lc.getmonthdue()
     lu = {}
     lu['due_category'] = p_list['d_days']
-    lu['due_amount'] = p_list['d_amount']
+    lu['d_series'] = p_list['d_series']
+    lu['d_drilldownSeries'] = p_list['d_drilldownSeries']
     
     lu['today_due_list'] = p_list['today_due_list']
     lu['record_number'] = p_list['today_due_list'].count()
@@ -49,7 +50,7 @@ def welcome(request):
     return render_to_response('welcome.html', lu, RequestContext(request))
 
 def wxfocus(request):
-    return render_to_response('overall_template.html')
+    return render_to_response('wxfocus.html',RequestContext(request))
 
 
 def logout(request):
@@ -57,6 +58,9 @@ def logout(request):
     return render_to_response("login.html")
     
 def login(request):
+    redirect_to = request.REQUEST.get('next')
+    if not redirect_to:
+        redirect_to = '/welcome'
     if request.method == 'POST':
         username = request.POST.get('username', '')
         password = request.POST.get('password', '')
@@ -65,11 +69,9 @@ def login(request):
             # Correct password, and the user is marked "active"
             auth.login(request, user)
             # Redirect to a success page.
-            return HttpResponseRedirect('/welcome')
-            #return render_to_response('welcome.html', {"today_due_list": today_due_list}, RequestContext(request))
-            #return render_to_response("welcome.html", RequestContext(request))
+            return HttpResponseRedirect(redirect_to)
         else:
             # Show an error page
             return render_to_response("login.html",({'errormsg':u'用户名或密码错误'}), RequestContext(request))
     else:
-        return render_to_response("login.html", RequestContext(request))
+        return render_to_response("login.html",{'next': redirect_to,}, RequestContext(request))

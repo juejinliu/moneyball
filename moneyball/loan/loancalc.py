@@ -130,7 +130,7 @@ class loancalc(object):
         return ret_data
 
 
-# 得到月份统计数据
+# 得到过去12个月月份统计数据
     def getmonthsummary(self):
         ret_data = {}
         m_months = []
@@ -167,12 +167,46 @@ class loancalc(object):
         ret_data['m_incomeamt'] = m_incomeamt
         return ret_data
 
+# 得到未来12个月月份统计数据
+    def getfuturesummary(self):
+        ret_data = {}
+        f_months = []
+        f_amount = []      #总额
+        f_insamt = []      #利息
+        f_ownamt = []    #本金
+        now = datetime.datetime.now()
+        for m in range(0,12):
+            targetmonth = monthdelta(now,m)
+            f_loandtl_amt = float(0.00)
+            f_loandtl_insamt = float(0.00)
+            f_loandtl_feeamt = float(0.00)
+            f_loandtl_ownamt = float(0.00)
+            if self.loandtllist.filter(expiredate__year=targetmonth.year,expiredate__month=targetmonth.month,status=self.loan_notreturnstatus).count() > 0:
+                f_loandtl_insamt = float(self.loandtllist.filter(expiredate__year=targetmonth.year,expiredate__month=targetmonth.month,status=self.loan_notreturnstatus).aggregate(Sum('insamt'))['insamt__sum'])
+                f_loandtl_feeamt = float(self.loandtllist.filter(expiredate__year=targetmonth.year,expiredate__month=targetmonth.month,status=self.loan_notreturnstatus).aggregate(Sum('feeamt'))['feeamt__sum'])
+                f_loandtl_ownamt = float(self.loandtllist.filter(expiredate__year=targetmonth.year,expiredate__month=targetmonth.month,status=self.loan_notreturnstatus).aggregate(Sum('ownamt'))['ownamt__sum'])
+                f_loandtl_insamt -= float(f_loandtl_feeamt)
+                f_loandtl_amt = float(f_loandtl_insamt) + float(f_loandtl_ownamt)
+            f_months.append(targetmonth.strftime("%Y-%m"))
+            f_amount.append(f_loandtl_amt)
+            f_insamt.append(f_loandtl_insamt)
+            f_ownamt.append(f_loandtl_ownamt)
+        ret_data['f_months'] = f_months
+        ret_data['f_amount'] = f_amount
+        ret_data['f_insamt'] = f_insamt
+        ret_data['f_ownamt'] = f_ownamt
+        return ret_data
+
 
 # 得到今天待收明细及未来30天待收数据，用于显示welcome.html中数据
     def getmonthdue(self):
         ret_data = {}
         d_days = []
         d_amount = []      #待收总额
+        
+        series = []
+        drilldownSeries = []
+        drilldownSeriesData = []
         now = datetime.datetime.now()
         fromdate = datetime.date(now.year,now.month,now.day);
         enddate = now + timedelta(days=30)
@@ -187,9 +221,9 @@ class loancalc(object):
             ownamt_sum = today_due_list.aggregate(Sum('ownamt'))['ownamt__sum']
             feeamt_sum = today_due_list.aggregate(Sum('feeamt'))['feeamt__sum']
             amount_sum = float(ownamt_sum) + float(insamt_sum) - float(feeamt_sum)
-# 未来30天待收明细，用于生成柱状图        
+# 未来30天待收明细，用于生成drilldown柱状图        
         dtl_list = self.loandtllist.filter(expiredate__range=(fromdate,enddate),status=self.loan_notreturnstatus).values('expiredate').annotate(sumownamt=Sum('ownamt'),suminsamt=Sum('insamt'),sumfeeamt=Sum('feeamt')).order_by('-expiredate')
-        for m in range(0,30):
+        for m in range(1,31):
             targetday = now + datetime.timedelta(days=m)
             d_days.append(targetday.strftime("%d"))
             targetvalue = dtl_list.filter(expiredate=targetday)
@@ -197,9 +231,25 @@ class loancalc(object):
             if targetvalue:
                 for n in targetvalue:
                     tmp_amount += float(n['sumownamt']) + float(n['suminsamt']) - float(n['sumfeeamt'])
+#                 按平台分组
+                pf_loandtl_amt = self.loandtllist.filter(expiredate=targetday,status=self.loan_notreturnstatus).values('platform').annotate(sumownamt=Sum('ownamt'),suminsamt=Sum('insamt'),sumfeeamt=Sum('feeamt'))
+#                 pf_loandtl_amt = targetvalue.values('platform').annotate(sumownamt=Sum('sumownamt'),suminsamt=Sum('suminsamt'),sumfeeamt=Sum('sumfeeamt'))
+                if pf_loandtl_amt.count()>0:
+                    tmp_data = []
+                    tmp_pf_amt = 0
+                    for pfitem in pf_loandtl_amt:
+                        tmp_pf_amt = pfitem['sumownamt'] + pfitem['suminsamt'] - pfitem['sumfeeamt']
+                        tmp_data.append(tmp_pf_amt)
+                    drilldownSeriesData.append({'name':targetday.strftime("%d"),'id':targetday.strftime("%y%m%d"),'data':tmp_data})
             d_amount.append(tmp_amount)
+            series.append({'name':d_days,'y':tmp_amount,'drilldown':targetday.strftime("%d")})
+#             dtl_pf_list = dtl_list.filter(expiredate=targetday,status=self.loan_notreturnstatus).values('platform').annotate(sumownamt=Sum('ownamt'),suminsamt=Sum('insamt'),sumfeeamt=Sum('feeamt'))
+#         drilldownSeries['series'] = drilldownSeriesData
+#         生成图标数据
         ret_data['d_days'] = d_days
-        ret_data['d_amount'] = d_amount
+        ret_data['d_series'] = series
+        ret_data['d_drilldownSeries'] = drilldownSeriesData
+        
         ret_data['today_due_list'] = today_due_list
         ret_data['insamt_sum'] = insamt_sum
         ret_data['feeamt_sum'] = feeamt_sum

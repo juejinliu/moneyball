@@ -2,10 +2,13 @@
 import hashlib
 import xml.etree.ElementTree as ET
 import urllib2
+from django.shortcuts import render,render_to_response
+from django.template import RequestContext
 from moneyball.wx.models import Wxautoreply
 from moneyball.loan.views import loan_detail_return_core
 from moneyball.loan.models import *
 from moneyball.user.models import *
+from django.contrib import auth
 import copy
 from datetime import timedelta
 # import requests
@@ -46,12 +49,49 @@ WX_PIC_TXT_RSP = """<xml>
 def weixin(request):
     if request.method == "GET":
         rsptext = checkSignature(request)
-        print rsptext 
+#         print rsptext 
         return HttpResponse(rsptext, content_type="text/plain")
     else:
         rsptext = response_msg(request)
-        print rsptext 
+#         print rsptext
         return HttpResponse(rsptext, content_type="text/plain")
+
+def bindwxid(request):
+    action = request.REQUEST.get('action')
+    wxid = request.REQUEST.get('wxid')
+    if not action or not wxid:
+        return HttpResponse(u'程序好像有点问题，请发消息给微信号，谢谢')
+    if request.method == 'POST':
+        username = request.POST.get('username', '')
+        password = request.POST.get('password', '')
+        user = auth.authenticate(username=username, password=password)
+        if user is not None and user.is_active:
+            # Correct password, and the user is marked "active"
+            auth.login(request, user)
+            rpsmsg = ''
+            # Redirect to a success page.
+            try:
+                myuser = MyUser.objects.get(user = user)
+            except MyUser.DoesNotExist:
+                myuser = MyUser()
+                myuser.id = None
+                myuser.user = user
+            if action == 'bind':
+                myuser.wxid = wxid
+                rpsmsg = u'绑定微信号到用户' + user.username + u'成功'
+            elif action == 'unbind':
+                myuser.wxid = None
+                rpsmsg = u'用户' + user.username + u'借出当前微信号绑定成功'
+            else:
+                return render_to_response("login4phone.html",{'action': action,'wxid': wxid,'errormsg':u'有点问题，请稍后再试',}, RequestContext(request))
+            myuser.save()
+            return HttpResponse(rpsmsg)
+        else:
+            # Show an error page
+            return render_to_response("login4phone.html",{'action': action,'wxid': wxid,'errormsg':u'用户名或者密码错误',}, RequestContext(request))
+    else:
+        return render_to_response("login4phone.html",{'action': action,'wxid': wxid}, RequestContext(request))    
+
 
 def response_msg(request):
     """
@@ -132,11 +172,10 @@ def wxloansummary(msg):
         rtntxt += u"当月收益   :"+ str(currincome) +"\n"
         rtntxt += u"当月利息   :"+ str(currmonthins) +"\n"
         rtntxt += u"当月奖励   :"+ str(currmonthaward) +"\n"
-        rtntxt += u"总收益   :"+ str(allincome) +"\n"
-        rtntxt += u"当月收益   :"+ str(allins) +"\n"
-        rtntxt += u"总利息   :"+ str(currincome) +"\n"
-        rtntxt += u"总奖励   :"+ str(allaward) +"\n"
-        rtntxt += u"管理费   :"+ str(allfee) +"\n"
+        rtntxt += u"总收益       :"+ str(allincome) +"\n"
+        rtntxt += u"总利息       :"+ str(allins) +"\n"
+        rtntxt += u"总奖励       :"+ str(allaward) +"\n"
+        rtntxt += u"管理费       :"+ str(allfee) +"\n"
         rtntxt += u"待收本金   :"+ str(dueallown) +"\n"
         rtntxt += u"待收利息   :"+ str(dueallins) +"\n"
         rtntxt += u"待收总额   :"+ str(dueallamt) +"\n"
@@ -172,8 +211,8 @@ def wxquerydue(msg):
         return 'NONE_WEIXINID'
     if not myusers or myusers.count()==0:
         return 'NONE_WEIXINID'
-    rtntxt = u"""您今天待收明细:
-        ------------------------------------\n"""
+    rtntxt = u'您今天待收明细:\n'
+    rtntxt += u'------------------------------------\n'
 #     myusersname = myusers.user.username
     now = datetime.datetime.now()
     tommorow = now + timedelta(days=1)
@@ -200,7 +239,7 @@ def wxquerydue(msg):
         sumamt = 0
         for loandtl in loandtllist:
             sumamt += loandtl.ownamt + loandtl.insamt - loandtl.feeamt
-            rtntxt += str(loandtl.id) + '   ' + loandtl.platform.name + '   ' + str(loandtl.ownamt + loandtl.insamt - loandtl.feeamt)
+            rtntxt += str(loandtl.id) + '   ' + loandtl.platform.name + '   ' + str(loandtl.ownamt + loandtl.insamt - loandtl.feeamt) +'\n'
         rtntxt += "------------------------------------\n"
         rtntxt = rtntxt + u"共["+ str(loandtllist.count()) + u"]笔,总金额:" + str(sumamt) +"\n"
     else:
@@ -212,12 +251,12 @@ def wxbindreply(msg):
     try:
         bindURL = Wxautoreply.objects.get(code='bindURL').content + msg['FromUserName']
     except Wxautoreply.DoesNotExist:
-        bindURL = 'http://moneyball.com.cn/bindWeixinID?wx_id=' + msg['FromUserName']
+        bindURL = 'http://moneyball.com.cn/wx/bindwxid/?action=bind&wxid=' + msg['FromUserName']
         
     try:
         picURL = Wxautoreply.objects.get(code='PicUrl').content
     except Wxautoreply.DoesNotExist:
-        picURL = 'http://moneyball.com.cn/common/static/images/mb06.png'
+        picURL = 'http://moneyball.com.cn/common/static/images/wxcontent.png'
     rtntxt = WX_PIC_TXT_RSP % (msg['FromUserName'], msg['ToUserName'], datetime.datetime.now(),
                              u'您未绑定微信号，点击绑定',u'点击输入用户名密码，验证成功则将微信号与账户绑定。点击绑定',
                              picURL , bindURL)
@@ -227,12 +266,12 @@ def wxunbindreply(msg):
     try:
         unbindURL = Wxautoreply.objects.get(code='unBindURL').content + msg['FromUserName']
     except Wxautoreply.DoesNotExist:
-        unbindURL = 'http://moneyball.com.cn/unBindWeixinID?wx_id=' + msg['FromUserName']
+        unbindURL = 'http://moneyball.com.cn/wx/bindwxid/?action=unbind&wxid=' + msg['FromUserName']
         
     try:
         picURL = Wxautoreply.objects.get(code='PicUrl').content
     except Wxautoreply.DoesNotExist:
-        picURL = 'http://moneyball.com.cn/common/static/images/mb06.png'
+        picURL = 'http://moneyball.com.cn/common/static/images/wxcontent.png'
 
     rtntxt = WX_PIC_TXT_RSP % (msg['FromUserName'], msg['ToUserName'], datetime.datetime.now(),
                              u'您确定要解除账户绑定吗？',u'点击输入用户名密码，验证成功则解除微信号与账户的绑定。点击解绑',
@@ -279,19 +318,6 @@ def parse_msg(request):
     return msg
  
 
-def query_due_info():
-    """
-    查询待收明细
-    """
-    return movie
- 
- 
-def query_loan_summary():
-    """
-    查询汇总信息
-    """
-    return description
- 
- 
+
 
  

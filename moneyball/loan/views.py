@@ -61,6 +61,13 @@ def loansummary(request):
     lu['m_insamt'] = m_list['m_insamt']
     lu['m_awardamt'] = m_list['m_awardamt']
     lu['m_incomeamt'] = m_list['m_incomeamt']
+
+    m_list  = lc.getfuturesummary()
+    lu['f_category'] = m_list['f_months']
+    lu['f_amount'] = m_list['f_amount']
+    lu['f_insamt'] = m_list['f_insamt']
+    lu['f_ownamt'] = m_list['f_ownamt']
+
     del lc 
     
 #     pf_category
@@ -292,6 +299,13 @@ def getplatformfee(request):
             #    raise Http404
     return HttpResponse(json.dumps(items_dict), content_type="application/json" )
 
+@login_required
+def getpfduesum(request):
+    items_dict = {'due_amount':'3.00',
+                  'due_category':u'测试'}
+    
+    return HttpResponse(json.dumps(items_dict), content_type="application/json" )
+
 #借款记录查询
 @login_required
 def loanlist(request):
@@ -358,7 +372,7 @@ def loandetaillist(request):
                               )
 # 用于更新导入明细数据中的loan_id
 def update_loandtl_loanid(request):
-    dtls = Loandetail.objects.filter(user=5)
+    dtls = Loandetail.objects.filter(user=7)
     for dtl in dtls:
         loan = Loan.objects.get(oldid=dtl.loan_id)
         dtlobj = Loandetail.objects.get(id = dtl.id)

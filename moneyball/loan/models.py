@@ -58,7 +58,7 @@ class Loan(models.Model):
     offlineamt = models.DecimalField(decimal_places=2,max_digits=9,default=0.00)
     returndate = models.DateField(blank=True,null=True)
     comments = models.CharField(blank=True,null=True,max_length=300)
-#     oldid = models.IntegerField()
+#     oldid = models.IntegerField()   #用于更新导入数据，正常情况不需要这个字段
             
     def __unicode__(self):
         return unicode(self.user)
