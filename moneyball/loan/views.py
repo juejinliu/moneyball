@@ -299,12 +299,6 @@ def getplatformfee(request):
             #    raise Http404
     return HttpResponse(json.dumps(items_dict), content_type="application/json" )
 
-@login_required
-def getpfduesum(request):
-    items_dict = {'due_amount':'3.00',
-                  'due_category':u'测试'}
-    
-    return HttpResponse(json.dumps(items_dict), content_type="application/json" )
 
 #借款记录查询
 @login_required

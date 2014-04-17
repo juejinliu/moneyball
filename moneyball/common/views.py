@@ -38,7 +38,10 @@ def welcome(request):
     lu['due_category'] = p_list['d_days']
     lu['d_series'] = p_list['d_series']
     lu['d_drilldownSeries'] = p_list['d_drilldownSeries']
-    
+
+    lu['d_pf_inner_series'] = p_list['d_pf_inner_series']
+    lu['d_pf_outer_series'] = p_list['d_pf_outer_series']
+
     lu['today_due_list'] = p_list['today_due_list']
     lu['record_number'] = p_list['today_due_list'].count()
     lu['insamt_sum'] = p_list['insamt_sum']

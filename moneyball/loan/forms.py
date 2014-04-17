@@ -312,8 +312,8 @@ class LoanSearchForm(BaseSearchForm):
 #         search_fields = ('^name', 'description', 'specifications', '=id')
     
     platform = forms.ModelChoiceField(label=u'平台',queryset=None,required = False)
-    start_date = forms.DateField(label=u'开始日期',required = False, widget=SelectDateWidget(),input_formats = ('%Y-%m-%d',),)
-    end_date = forms.DateField(label=u'结束日期',required = False, widget=SelectDateWidget(),input_formats = ('%Y-%m-%d',),)
+    start_date = forms.DateField(label=u'开始日期',required = False, widget=SelectDateWidget(years=range(2011,2050)),input_formats = ('%Y-%m-%d',),)
+    end_date = forms.DateField(label=u'结束日期',required = False, widget=SelectDateWidget(years=range(2011,2050)),input_formats = ('%Y-%m-%d',),)
     status = forms.ModelChoiceField(label=u'状态',queryset=None,required = False)
     def prepare_start_date(self):
         if self.cleaned_data['start_date']:
@@ -332,6 +332,7 @@ class LoanSearchForm(BaseSearchForm):
         super(BaseSearchForm, self).__init__(*args, **kwargs)
         self.fields['platform'].queryset = Platform.objects.filter(user=self.user).order_by('name')
         self.fields['status'].queryset = Returnstatus.objects.all().order_by('status')
+        self.fields['start_date'].widget.attrs['class'] = 'datepicker'
 
 class LoanDtlSearchForm(BaseSearchForm):
     class Meta:
@@ -339,8 +340,8 @@ class LoanDtlSearchForm(BaseSearchForm):
 #         search_fields = ('^name', 'description', 'specifications', '=id')
     
     platform = forms.ModelChoiceField(label=u'平台',queryset=None,required = False)
-    start_date = forms.DateField(label=u'开始日期',required = False, widget=SelectDateWidget(),input_formats = ('%Y-%m-%d',),)
-    end_date = forms.DateField(label=u'结束日期',required = False, widget=SelectDateWidget(),input_formats = ('%Y-%m-%d',),)
+    start_date = forms.DateField(label=u'开始日期',required = False, widget=SelectDateWidget(years=range(2011,2050)),input_formats = ('%Y-%m-%d',),)
+    end_date = forms.DateField(label=u'结束日期',required = False, widget=SelectDateWidget(years=range(2011,2050)),input_formats = ('%Y-%m-%d',),)
     status = forms.ModelChoiceField(label=u'状态',queryset=None,required = False,initial='0')
     def prepare_start_date(self):
         if self.cleaned_data['start_date']:

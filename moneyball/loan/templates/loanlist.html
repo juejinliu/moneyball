@@ -6,6 +6,11 @@
 {% block pagetitle %}欢迎使用本系统{% endblock %}
 
 {% block extrajs %}
+<script>
+$(document).ready(function() { 
+	$( "#id_start_date" ).datepicker();
+});	
+</script>
 {% endblock %}
 
 {% block body %}

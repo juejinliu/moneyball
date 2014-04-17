@@ -12,21 +12,24 @@
 
 	<head>
 	
-		<title>{% block title %}{% endblock %}MoneyBall</title>
+		<title>P2P网贷记账 信用卡管理 财务管理{% block title %}{% endblock %}</title>
 
         <meta charset="UTF-8" />
         <!-- <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">  -->
-        <title>P2P 网贷记账 财务管理</title>
+        <!-- <title>P2P网贷记账 信用卡管理 财务管理</title> -->
         <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-        <meta name="description" content="P2P 网贷管理 财务记账 集中管理你的财富" />
-        <meta name="keywords" content="P2P 网贷管理 财务记账 集中管理你的财富" />
-        <meta name="author" content="Moneyball" />
+        <meta name="description" content="P2P网贷管理 信用卡管理 财务记账 集中管理你的财富 微信查询回款情况，每天看到资产增值" />
+        <meta name="keywords" content="P2P 网贷管理 信用卡管理 财务记账 集中管理你的财富" />
+        <meta name="author" content="Moneyball.com.cn" />
 		<link href="{% static "mainsite/templatemo_style.css" %}" type="text/css" rel="stylesheet" /> 
     	<link rel="stylesheet" href="{% static "mainsite/table.css" %}">
     	<link rel="stylesheet" href="{% static "mainsite/slimbox2.css" %}" type="text/css" media="screen" />
+		<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+    	
 		{% block extracss %}{% endblock %}
-		<script type="text/javascript" src="{% static "js/jquery.js" %}" ></script>
-
+  		<script src="{% static "js/jquery-1.10.2.js" %} "></script>
+  		<script src="{% static "js/jquery-ui.js" %}"></script>
+		<!-- <script type="text/javascript" src="{% static "js/jquery.js" %}" ></script> -->
 		{% block extrajs %}{% endblock %}
 	</head>
 	

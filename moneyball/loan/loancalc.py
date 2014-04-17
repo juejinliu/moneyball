@@ -4,8 +4,10 @@ from moneyball.common.utilfun import *
 from django.db.models import Sum
 import decimal
 import datetime
+import json
 from datetime import timedelta
 from platform import platform
+from json.tests.test_pass1 import JSON
 
 class loancalc(object):
     def __init__(self,user):
@@ -233,23 +235,72 @@ class loancalc(object):
                     tmp_amount += float(n['sumownamt']) + float(n['suminsamt']) - float(n['sumfeeamt'])
 #                 按平台分组
                 pf_loandtl_amt = self.loandtllist.filter(expiredate=targetday,status=self.loan_notreturnstatus).values('platform').annotate(sumownamt=Sum('ownamt'),suminsamt=Sum('insamt'),sumfeeamt=Sum('feeamt'))
-#                 pf_loandtl_amt = targetvalue.values('platform').annotate(sumownamt=Sum('sumownamt'),suminsamt=Sum('suminsamt'),sumfeeamt=Sum('sumfeeamt'))
                 if pf_loandtl_amt.count()>0:
-                    tmp_data = []
+                    
                     tmp_pf_amt = 0
+                    dd_data = []
                     for pfitem in pf_loandtl_amt:
+                        tmp_data = []
                         tmp_pf_amt = pfitem['sumownamt'] + pfitem['suminsamt'] - pfitem['sumfeeamt']
-                        tmp_data.append(tmp_pf_amt)
-                    drilldownSeriesData.append({'name':targetday.strftime("%d"),'id':targetday.strftime("%y%m%d"),'data':tmp_data})
+                        tmp_data.append(Platform.objects.get(id=pfitem['platform']).name)
+                        tmp_data.append(float(tmp_pf_amt))
+                        dd_data.append(tmp_data)
+                    drilldownSeriesData.append({'name':targetday.strftime("%d"),'id':targetday.strftime("%d"),'data':dd_data})
             d_amount.append(tmp_amount)
-            series.append({'name':d_days,'y':tmp_amount,'drilldown':targetday.strftime("%d")})
-#             dtl_pf_list = dtl_list.filter(expiredate=targetday,status=self.loan_notreturnstatus).values('platform').annotate(sumownamt=Sum('ownamt'),suminsamt=Sum('insamt'),sumfeeamt=Sum('feeamt'))
-#         drilldownSeries['series'] = drilldownSeriesData
-#         生成图标数据
+            series.append({'name':targetday.strftime("%d"),'y':tmp_amount,'drilldown':targetday.strftime("%d")})
+# 平台的分布数据，用于生成welcome。html中的饼图
+        pf_loandtl_sums = self.loandtllist.filter(status=self.loan_notreturnstatus).values('platform','totalperiod').annotate(sumownamt=Sum('ownamt')).order_by('platform')
+        pf_id = ''
+        pf_amtsum = 0           #每个平台汇总金额
+        pfall_amtsum = 0        #总的汇总金额
+        pf_inneramtsums = []    #用于临时存储平台金额的array
+        pf_outeramtsums = []    #用于临时存储月份金额的array
+        pf_inner = {}           #饼图的内层数据，也就是平台数据
+        pf_outer = {}           #外层数据，就是每个平台中月份数据
+        i = 0
+        colorindex = 0
+        for pf_loandtl_sum in pf_loandtl_sums:
+            pfall_amtsum += pf_loandtl_sum['sumownamt']
+            pf_outer = {}
+            pf_outer['name'] = u'投标类型 ' + str(pf_loandtl_sum['totalperiod']) + u' 个月/天'
+            pf_outer['y'] = pf_loandtl_sum['sumownamt']
+#             pf_outer['color'] = 'colors[' + colorindex + ']'
+            pf_outeramtsums.append(pf_outer)
+            if i==0 or pf_id == pf_loandtl_sum['platform']:
+                pf_amtsum += pf_loandtl_sum['sumownamt']
+                if i == 0:
+                    pf_id = pf_loandtl_sum['platform']
+            else:
+                pf_inner = {}
+                pf_inner['name'] = Platform.objects.get(id=pf_id).name
+                pf_inner['y'] = pf_amtsum
+#                 pf_inner['color'] = 'colors[' + colorindex + ']'
+                pf_inneramtsums.append(pf_inner)
+                colorindex += 1
+                pf_id = pf_loandtl_sum['platform']
+                pf_amtsum = pf_loandtl_sum['sumownamt']
+            i += 1
+#             要把最后一次循环的数据加进去
+        pf_inner = {}
+        pf_inner['name'] =Platform.objects.get(id=pf_id).name
+        pf_inner['y'] = pf_amtsum
+#         pf_inner['color'] = 'colors[' + colorindex + ']'
+        pf_inneramtsums.append(pf_inner)
+
+        for pf_inneramtsum in pf_inneramtsums:
+            pf_inneramtsum['y'] = float("%.2f" % float(float(pf_inneramtsum['y'])/float(pfall_amtsum) * 100))
+        for pf_outeramtsum in pf_outeramtsums:
+            pf_outeramtsum['y'] = float("%.2f" % float(float(pf_outeramtsum['y'])/float(pfall_amtsum) * 100))
+            
+#         生成柱状图标数据
         ret_data['d_days'] = d_days
-        ret_data['d_series'] = series
-        ret_data['d_drilldownSeries'] = drilldownSeriesData
+        ret_data['d_series'] = str(series).replace('\'name\':','name:').replace('\'y\':', 'y:').replace('\'drilldown\':', 'drilldown:')
+        ret_data['d_drilldownSeries'] = str(drilldownSeriesData).replace('\'name\':','name:').replace('\'data\':', 'data:').replace('\'id\':', 'id:').replace('u\'', '\'')
         
+#         生成饼图数据
+        ret_data['d_pf_inner_series'] = str(pf_inneramtsums).replace('\'name\':','name:').replace('\'y\':', 'y:').replace('u\'', '\'')
+        ret_data['d_pf_outer_series'] = str(pf_outeramtsums).replace('\'name\':','name:').replace('\'y\':', 'y:').replace('u\'', '\'')
+
         ret_data['today_due_list'] = today_due_list
         ret_data['insamt_sum'] = insamt_sum
         ret_data['feeamt_sum'] = feeamt_sum
