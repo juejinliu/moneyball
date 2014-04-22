@@ -99,7 +99,10 @@ class loancalc(object):
         pf_loan_amt = self.loanlist.values('platform').annotate(sumamt=Sum('amount'),sumaward=Sum('awardamt'),sumcontinuedamt=Sum('continuedamt'),sumofflineamt=Sum('offlineamt')).order_by('platform')
         for pf in pf_loan_amt:
             pf_id = pf['platform']
-            pf_name = Platform.objects.get(id=pf_id)
+            try:
+                pf_name = Platform.objects.get(id=pf_id)
+            except Platform.DoesNotExist:
+                pf_name = ''
             pf_names.append(pf_name)
             pf_awardamt.append(pf['sumaward']+pf['sumcontinuedamt']+pf['sumofflineamt'])
             pf_dtlamt = self.loandtllist.filter(platform=pf_id).values('status').annotate(suminsamt=Sum('insamt'),sumfeeamt=Sum('feeamt'),sumownamt=Sum('ownamt'))
@@ -242,7 +245,11 @@ class loancalc(object):
                     for pfitem in pf_loandtl_amt:
                         tmp_data = []
                         tmp_pf_amt = pfitem['sumownamt'] + pfitem['suminsamt'] - pfitem['sumfeeamt']
-                        tmp_data.append(Platform.objects.get(id=pfitem['platform']).name)
+                        try:
+                            pf_name = Platform.objects.get(id=pfitem['platform']).name
+                        except Platform.DoesNotExist:
+                            pf_name = ''
+                        tmp_data.append(pf_name)
                         tmp_data.append(float(tmp_pf_amt))
                         dd_data.append(tmp_data)
                     drilldownSeriesData.append({'name':targetday.strftime("%d"),'id':targetday.strftime("%d"),'data':dd_data})
@@ -272,7 +279,11 @@ class loancalc(object):
                     pf_id = pf_loandtl_sum['platform']
             else:
                 pf_inner = {}
-                pf_inner['name'] = Platform.objects.get(id=pf_id).name
+                try:
+                    pf_name = Platform.objects.get(id=pf_id).name
+                except Platform.DoesNotExist:
+                    pf_name = ''
+                pf_inner['name'] =pf_name 
                 pf_inner['y'] = pf_amtsum
 #                 pf_inner['color'] = 'colors[' + colorindex + ']'
                 pf_inneramtsums.append(pf_inner)
@@ -282,15 +293,23 @@ class loancalc(object):
             i += 1
 #             要把最后一次循环的数据加进去
         pf_inner = {}
-        pf_inner['name'] =Platform.objects.get(id=pf_id).name
+        pf_name = ''
+        if pf_id:
+            try:
+                pf_name = Platform.objects.get(id=pf_id).name
+            except Platform.DoesNotExist:
+                pf_name = ''
+        pf_inner['name'] = pf_name
         pf_inner['y'] = pf_amtsum
 #         pf_inner['color'] = 'colors[' + colorindex + ']'
         pf_inneramtsums.append(pf_inner)
 
         for pf_inneramtsum in pf_inneramtsums:
-            pf_inneramtsum['y'] = float("%.2f" % float(float(pf_inneramtsum['y'])/float(pfall_amtsum) * 100))
+            if pfall_amtsum > 0:
+                pf_inneramtsum['y'] = float("%.2f" % float(float(pf_inneramtsum['y'])/float(pfall_amtsum) * 100))
         for pf_outeramtsum in pf_outeramtsums:
-            pf_outeramtsum['y'] = float("%.2f" % float(float(pf_outeramtsum['y'])/float(pfall_amtsum) * 100))
+            if pfall_amtsum > 0:
+                pf_outeramtsum['y'] = float("%.2f" % float(float(pf_outeramtsum['y'])/float(pfall_amtsum) * 100))
             
 #         生成柱状图标数据
         ret_data['d_days'] = d_days

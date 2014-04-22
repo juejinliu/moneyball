@@ -32,13 +32,14 @@ TEMPLATE_DIRS = (
 SECRET_KEY = 'xtdkofon6-u4rvx^+u)g^1**dg853yvzciea4b=r535_-j0=te'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-if socket.gethostname() == 'CHANGSHU2':
+# print socket.gethostname()
+if socket.gethostname() == 'CHANGSHU2' or socket.gethostname() == 'shuangshandeMacBook-Pro.local':
     DEBUG = TEMPLATE_DEBUG = True
 else:
     DEBUG = TEMPLATE_DEBUG = False
     ALLOWED_HOSTS = ['moneyball.com.cn', 'www.moneyball.com.cn']
 
-#DEBUG = TEMPLATE_DEBUG = True
+# DEBUG = TEMPLATE_DEBUG = True
 ADMINS = (
     ('chang', '13690578@qq.com'),
 )
