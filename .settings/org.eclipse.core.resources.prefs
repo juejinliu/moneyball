@@ -1,0 +1,8 @@
+eclipse.preferences.version=1
+encoding//moneyball/accounts/forms.py=utf-8
+encoding//moneyball/accounts/models.py=utf-8
+encoding//moneyball/creditcard/forms.py=utf-8
+encoding//moneyball/creditcard/models.py=utf-8
+encoding//moneyball/loan/loancalc.py=utf-8
+encoding//moneyball/loan/models.py=utf-8
+encoding//moneyball/urls.py=utf-8

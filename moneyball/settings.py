@@ -89,6 +89,7 @@ INSTALLED_APPS = (
     'moneyball.user',
     'moneyball.loan',
     'moneyball.wx',
+    'moneyball.accounts',
 )
 
 MIDDLEWARE_CLASSES = (
