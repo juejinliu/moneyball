@@ -1,0 +1,126 @@
+{% extends "overall_template.html" %}
+{% load pagination_tags %}
+{% load i18n %}
+{% load staticfiles %}
+{% load poll_extras %}
+{% block pagetitle %}信用卡设置{% endblock %}
+
+{% block extrajs %}
+
+{% endblock %}
+
+{% block body %}
+    	<div id="content">
+    	<div id="left_half_content">
+
+    	<table class="mytable">
+ 		{% autopaginate creditcard_list 18%}
+    		<tr><td colspan=8>总数：<a id="titlenum">{{ creditcard_list.count }}</a> </td></tr>
+    		<tr>
+	    		<th width=30 >序号</th>
+	    		<th width=100 >操作</th>
+	    		<th width=100 >名称</th>
+	    		<th width=100 >开户机构</th>
+	    		<th width=100 >信用额度</th>
+	    		<th width=100 >目前欠款</th>
+	    		<th width=100 >账单日</th>
+	    		<th width=100 >还款日</th>
+	    		<th width=100 >状态</th>
+			</tr>
+			
+  			{% for data in creditcard_list %}
+  				<tr>
+     			<td>
+     				{% ifequal data.active.code 0 %}
+     					<a id="textnotreturn">
+     				{% else %}
+     					<a id="textreturned">
+     				{% endifequal %}
+     				{{ request.page|minus:1|times:18|add:forloop.counter }}</a></td>
+     			<td><a href="{% url 'action_one_creditcard' data.id %}">改  </a>
+     				{% ifequal data.status.code 0 %}
+     					<a href="{% url 'hide_creditcard' data.id 1 %}" onclick="return confirm('你确认要启用此信用卡吗?');">启用</a></td>
+     				{% else %}
+     					<a href="{% url 'hide_creditcard' data.id 0 %}" onclick="return confirm('你确认要隐藏此信用卡吗?');">隐藏</a></td>
+     				{% endifequal %}
+     				
+		     	<td>
+     				{% ifequal data.status.code 0 %}
+     					<a id="textnotreturn">
+     				{% else %}
+     					<a id="textreturned">
+     				{% endifequal %}
+
+		     		{{ data.name }}</a></td>      
+     			<td>
+     				{% ifequal data.active.code 0 %}
+     					<a id="textnotreturn">
+     				{% else %}
+     					<a id="textreturned">
+     				{% endifequal %}
+
+     				{{ data.org }}</a></td>
+     			<td>
+     				{% ifequal data.active.code 0 %}
+     					<a id="textnotreturn">
+     				{% else %}
+     					<a id="textreturned">
+     				{% endifequal %}
+
+     				{{ data.debitamt }}</a></td>
+     			<td>
+     				{% ifequal data.active.code 0 %}
+     					<a id="textnotreturn">
+     				{% else %}
+     					<a id="textreturned">
+     				{% endifequal %}
+
+     				{{ data.balance }}</a></td>
+     			<td>
+     				{% ifequal data.active.code 0 %}
+     					<a id="textnotreturn">
+     				{% else %}
+     					<a id="textreturned">
+     				{% endifequal %}
+     				{{ data.billdate }}</a></td>
+     			<td>
+     				{% ifequal data.active.code 0 %}
+     					<a id="textnotreturn">
+     				{% else %}
+     					<a id="textreturned">
+     				{% endifequal %}
+     				{{ data.duedate }}</a></td>
+     			<td>
+     				{% ifequal data.active.code 0 %}
+     					<a id="textnotreturn">
+     				{% else %}
+     					<a id="textreturned">
+     				{% endifequal %}
+     				{{ data.status }}</a></td>
+  			{% endfor %}
+  		</table>
+		{% paginate %}
+
+    	</div>
+    	<div id="split_content"> 
+    	</div>
+    {% ifequal id Null %} 
+    	<form action="{% url 'action_all_creditcard' %}" method="post">
+    {% else %}
+    	<form action="{% url 'action_one_creditcard' id%}" method="post">
+    {%endifequal%}
+    	<div id="righ_half_content">
+{% if form.errors %}
+        <p style="color: red;">
+            	请修正以下错误.
+        </p>
+{% endif %}
+        	<table>
+            	{{ form.as_table }}
+        		&nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" value="添加/修改" id="submit_btn">
+        		<a href="{% url 'action_all_creditcard' %}">&nbsp;&nbsp;&nbsp;&nbsp;清空</a>
+        	</table>
+        </div>
+    </form>
+        </div>
+{% endblock %}

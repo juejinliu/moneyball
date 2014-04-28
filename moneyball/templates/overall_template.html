@@ -64,12 +64,12 @@
 						<a href='#'>网贷记账</a>
 						<em>网贷记账</em>
 					</li>
-					<!--
+					
 					<li class='P9CCMNav'>
 						<a href='#'>信用卡管家</a>
 						<em>信用卡管家</em>
 					</li>
-					-->
+					
 					<li class='P9CCMNav'>
 						<a href='#' title='' >交流互动</a>
 						<em>交流互动</em>
@@ -88,16 +88,16 @@
 					<a href="/loan/loanlist/?status=1">借出明细</a>
 					<a href="/loan/loandetaillist/?status=1">待收明细</a>
 				</li>
-				<!--
+				
 				<li class='P9CCNav'>
 					<a href=''>账单录入</a>
 					<a href=''>还款</a>
-					<a href=''>账单明细</a>
+					<!-- <a href=''>账单明细</a> -->
 					<a href=''>还款明细</a>
 					<a href=''>统计</a>
-					<a href='creditcard-form'>信用卡设置</a>
+					<a href="{% url 'action_all_creditcard' %}">信用卡设置</a>
 				</li>
-				-->
+				
 				<li class='P9CCNav'>
 					<a href='/wxfocus'>微信平台</a>
 				</li>
@@ -135,7 +135,7 @@
 					a.eq(n).css({top:0,opacity:1}).stop(true).animate({top:c,opacity:0},m);
 					a.eq(t).css({top:-(c),opacity:0}).stop(true).animate({top:0,opacity:1},m);
 					//子栏目数量
-					for (var i=0;i<3;i++){
+					for (var i=0;i<4;i++){
 						if (i!=n && i!=t){
 							a.eq(i).css({top:50,opacity:0});
 						}

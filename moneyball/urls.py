@@ -14,7 +14,7 @@ urlpatterns = patterns('',
     (r'^loan/', include('moneyball.loan.urls')),
     (r'^wx/', include('moneyball.wx.urls')),
     #(r'^accounts/', include('moneyball.accounts.urls')),
-    #(r'^creditcard/', include('moneyball.creditcard.urls')),
+    (r'^creditcard/', include('moneyball.creditcard.urls')),
     #(r'^moneyflow/', include('moneyball.moneyflow.urls')),
     #(r'^reports/', include('moneyball.reports.urls')),
     # Examples:

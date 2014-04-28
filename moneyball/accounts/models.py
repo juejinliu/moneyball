@@ -35,11 +35,14 @@ class Account(models.Model):
     name = models.CharField(max_length=150)
     org = models.ForeignKey(Orginfo)
     type = models.ForeignKey(Orgtype)
+    debitamt = models.DecimalField(decimal_places=2,max_digits=9,default=0.00)    #信用额度
     balance = models.DecimalField(decimal_places=2,max_digits=9,default=0.00)
-    insrate = models.DecimalField(decimal_places=2,max_digits=5,default=0.00)
-    insratetype = models.IntegerField(default=0)    #0-年利率 1-月利率 2-日利率
-    insdate = models.DateField(auto_now_add=False)  #结息日
+    insrate = models.DecimalField(blank=True,null=True,decimal_places=2,max_digits=5,default=0.00)
+    insratetype = models.IntegerField(blank=True,null=True,default=0)    #0-年利率 1-月利率 2-日利率
+    insdate = models.DateField(blank=True,null=True,auto_now_add=False)  #结息日
     status = models.ForeignKey(Accountstatus)    #0-无效1-正常
+    billdate = models.CharField(blank=True,null=True,max_length=2,default='00')  #账单日
+    duedate = models.CharField(blank=True,null=True,max_length=2,default='00')  #还款日
     comments = models.CharField(blank=True,null=True,max_length=300)
     def __unicode__(self):
         return unicode(self.name)
