@@ -1,0 +1,148 @@
+{% extends "overall_template.html" %}
+{% load pagination_tags %}
+{% load i18n %}
+{% load staticfiles %}
+{% load poll_extras %}
+{% block pagetitle %}信用卡账单{% endblock %}
+
+{% block extrajs %}
+
+{% endblock %}
+
+{% block body %}
+    	<div id="content">
+    	<div id="left_half_content">
+
+    	<table class="mytable">
+ 		{% autopaginate billinfo_list 18%}
+    		<tr><td colspan=8>总数：<a id="titlenum">{{ billinfo_list.count }}</a> </td></tr>
+    		<tr>
+	    		<th width=30 >序号</th>
+	    		<th width=100 >操作</th>
+	    		<th width=100 >名称</th>
+	    		<th width=100 >金额</th>
+	    		<!-- <th width=100 >余额</th> -->
+	    		<th width=100 >账单月份</th>
+	    		<th width=100 >到期日</th>
+	    		<!-- <th width=100 >分期金额</th>
+	    		<th width=100 >期数</th>
+	    		<th width=100 >费率</th> -->
+	    		<th width=100 >最低还款额</th>
+	    		<th width=100 >状态</th>
+			</tr>
+			
+  			{% for data in billinfo_list %}
+  				<tr>
+     			<td>
+     				{% ifnotequal data.status.status 2 %}
+     					<a id="textnotreturn">
+     				{% else %}
+     					<a id="textreturned">
+     				{% endifnotequal %}
+     				{{ request.page|minus:1|times:18|add:forloop.counter }}</a></td>
+     			<td><a href="{% url 'action_one_billinfo' data.id %}">改  </a>
+     				{% ifnotequal data.status.status 2 %}
+     					<a href="{% url 'update_billinfo' data.id 2 %}" onclick="return confirm('你确认要本期账单已还清吗?');">已还清</a></td>
+     				{% endifnotequal %}
+     				
+		     	<td>
+     				{% ifnotequal data.status.status 2 %}
+     					<a id="textnotreturn">
+     				{% else %}
+     					<a id="textreturned">
+     				{% endifnotequal %}
+
+		     		{{ data.acct }}</a></td>      
+     			<td>
+     				{% ifnotequal data.status.status 2 %}
+     					<a id="textnotreturn">
+     				{% else %}
+     					<a id="textreturned">
+     				{% endifnotequal %}
+
+     				{{ data.amount }}</a></td>
+     			<!-- <td>
+     				{% ifnotequal data.status.status 2 %}
+     					<a id="textnotreturn">
+     				{% else %}
+     					<a id="textreturned">
+     				{% endifnotequal %}
+
+     				{{ data.balance }}</a></td> -->
+     			<td>
+     				{% ifnotequal data.status.status 2 %}
+     					<a id="textnotreturn">
+     				{% else %}
+     					<a id="textreturned">
+     				{% endifnotequal %}
+
+     				{{ data.billmonth }}</a></td>
+     			<td>
+     				{% ifnotequal data.status.status 2 %}
+     					<a id="textnotreturn">
+     				{% else %}
+     					<a id="textreturned">
+     				{% endifnotequal %}
+     				{{ data.dueday }}</a></td>
+     			<!-- <td>
+     				{% ifnotequal data.status.status 2 %}
+     					<a id="textnotreturn">
+     				{% else %}
+     					<a id="textreturned">
+     				{% endifnotequal %}
+     				{{ data.splitamt }}</a></td>
+     			<td>
+     				{% ifnotequal data.status.status 2 %}
+     					<a id="textnotreturn">
+     				{% else %}
+     					<a id="textreturned">
+     				{% endifnotequal %}
+     				{{ data.splitpaynum }}</a></td>     			
+     			<td>
+     				{% ifnotequal data.status.status 2 %}
+     					<a id="textnotreturn">
+     				{% else %}
+     					<a id="textreturned">
+     				{% endifnotequal %}
+     				{{ data.splitrate }}</a></td>    -->  			
+     			<td>
+     				{% ifnotequal data.status.status 2 %}
+     					<a id="textnotreturn">
+     				{% else %}
+     					<a id="textreturned">
+     				{% endifnotequal %}
+     				{{ data.minpay }}</a></td>
+     			<td>
+     				{% ifnotequal data.status.status 2 %}
+     					<a id="textnotreturn">
+     				{% else %}
+     					<a id="textreturned">
+     				{% endifnotequal %}
+     				{{ data.status }}</a></td>
+  			{% endfor %}
+  		</table>
+		{% paginate %}
+
+    	</div>
+    	<div id="split_content"> 
+    	</div>
+    {% ifequal id Null %} 
+    	<form action="{% url 'action_all_billinfo' %}" method="post">
+    {% else %}
+    	<form action="{% url 'action_one_billinfo' id%}" method="post">
+    {%endifequal%}
+    	<div id="righ_half_content">
+{% if billform.errors %}
+        <p style="color: red;">
+            	请修正以下错误.
+        </p>
+{% endif %}
+        	<table>
+            	{{ billform.as_table }}
+        		&nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" value="添加/修改" id="submit_btn">
+        		<a href="{% url 'action_all_billinfo' %}">&nbsp;&nbsp;&nbsp;&nbsp;清空</a>
+        	</table>
+        </div>
+    </form>
+        </div>
+{% endblock %}

@@ -31,21 +31,21 @@
   			{% for data in creditcard_list %}
   				<tr>
      			<td>
-     				{% ifequal data.active.code 0 %}
+     				{% ifequal data.status.status 0 %}
      					<a id="textnotreturn">
      				{% else %}
      					<a id="textreturned">
      				{% endifequal %}
      				{{ request.page|minus:1|times:18|add:forloop.counter }}</a></td>
      			<td><a href="{% url 'action_one_creditcard' data.id %}">改  </a>
-     				{% ifequal data.status.code 0 %}
+     				{% ifequal data.status.status 0 %}
      					<a href="{% url 'hide_creditcard' data.id 1 %}" onclick="return confirm('你确认要启用此信用卡吗?');">启用</a></td>
      				{% else %}
      					<a href="{% url 'hide_creditcard' data.id 0 %}" onclick="return confirm('你确认要隐藏此信用卡吗?');">隐藏</a></td>
      				{% endifequal %}
      				
 		     	<td>
-     				{% ifequal data.status.code 0 %}
+     				{% ifequal data.status.status 0 %}
      					<a id="textnotreturn">
      				{% else %}
      					<a id="textreturned">
@@ -53,7 +53,7 @@
 
 		     		{{ data.name }}</a></td>      
      			<td>
-     				{% ifequal data.active.code 0 %}
+     				{% ifequal data.status.status 0 %}
      					<a id="textnotreturn">
      				{% else %}
      					<a id="textreturned">
@@ -61,7 +61,7 @@
 
      				{{ data.org }}</a></td>
      			<td>
-     				{% ifequal data.active.code 0 %}
+     				{% ifequal data.status.status 0 %}
      					<a id="textnotreturn">
      				{% else %}
      					<a id="textreturned">
@@ -69,7 +69,7 @@
 
      				{{ data.debitamt }}</a></td>
      			<td>
-     				{% ifequal data.active.code 0 %}
+     				{% ifequal data.status.status 0 %}
      					<a id="textnotreturn">
      				{% else %}
      					<a id="textreturned">
@@ -77,21 +77,21 @@
 
      				{{ data.balance }}</a></td>
      			<td>
-     				{% ifequal data.active.code 0 %}
+     				{% ifequal data.status.status 0 %}
      					<a id="textnotreturn">
      				{% else %}
      					<a id="textreturned">
      				{% endifequal %}
      				{{ data.billdate }}</a></td>
      			<td>
-     				{% ifequal data.active.code 0 %}
+     				{% ifequal data.status.status 0 %}
      					<a id="textnotreturn">
      				{% else %}
      					<a id="textreturned">
      				{% endifequal %}
      				{{ data.duedate }}</a></td>
      			<td>
-     				{% ifequal data.active.code 0 %}
+     				{% ifequal data.status.status 0 %}
      					<a id="textnotreturn">
      				{% else %}
      					<a id="textreturned">

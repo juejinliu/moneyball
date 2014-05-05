@@ -24,7 +24,7 @@ class LoanForm(forms.Form):
     awardrate = forms.DecimalField(label=u'投标奖励', initial='0.00' )
     feerate = forms.DecimalField(label=u'手续费', initial='0.00' )
     offlinerate = forms.DecimalField(label=u'线下充值奖励', initial='0.00')
-    comments =  forms.CharField(label=u'备注', widget=forms.Textarea(),required=False)
+#     comments =  forms.CharField(label=u'备注', widget=forms.Textarea(),required=False)
     error_css_class = 'error'
     required_css_class = 'required'
     def clean_amount(self):
@@ -87,7 +87,7 @@ class LoanForm(forms.Form):
                 self.fields['awardrate'].initial = data.awardrate
                 self.fields['feerate'].initial = data.feerate
                 self.fields['offlinerate'].initial = data.offlinerate
-                self.fields['comments'].initial = data.comments
+#                 self.fields['comments'].initial = data.comments
 
     def calinsamt(self, instance=None):
         if instance is None:
@@ -235,7 +235,7 @@ class LoanForm(forms.Form):
         la.awardrate = self.cleaned_data['awardrate']
         la.feerate = self.cleaned_data['feerate']
         la.offlinerate = self.cleaned_data['offlinerate']
-        la.comments = self.cleaned_data['comments']
+#         la.comments = self.cleaned_data['comments']
 #         la.loandate = self.cleaned_data['loandate']
 #         la.platform = self.cleaned_data['platform']
 #         la.amount = self.data['amount']

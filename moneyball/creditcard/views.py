@@ -48,10 +48,75 @@ def creditcardinfo(request,ccid=None,status=None):
         except Creditcard.DoesNotExist:
             return render_to_response("success.html",({'errormsg':u'不存在这条记录'}), RequestContext(request))
     results = Account.objects.filter(user=request.user).order_by('id')
-    return render_to_response("Creditcard.html", RequestContext(request,{
+    return render_to_response("creditcard.html", RequestContext(request,{
                                                 'form': form,
                                                 'id': creditcardid,
                                                 'infomsg':u'操作成功',
                                                 "creditcard_list": results})
                                   )
 
+#===============================================================================
+# 账单的修改，添加操作在这个类里面全部完成
+#===============================================================================
+@login_required
+def billinfo(request,biid=None,status=None):
+#     billform = BillForm(Billinfo())
+    billform = BillForm(None,request.user)
+    billid = biid
+    if request.method == 'POST':
+        billform = BillForm(None,request.user,request.POST)
+        if billform.is_valid():
+            #try:
+            new_Bill = billform.save(request,None,biid)
+            #except:
+            #    raise Http404
+    elif request.method == 'GET':
+        try:
+            if biid:
+                rtn_record = Billinfo.objects.get(id=biid)
+                if status:
+                    status_record = Billstatus.objects.get(status=status)
+                    rtn_record.status = status_record
+                    rtn_record.save()
+                else:
+                    billform = BillForm(rtn_record)
+                    billid = rtn_record.id
+        except Billinfo.DoesNotExist:
+            return render_to_response("success.html",({'errormsg':u'不存在这条记录'}), RequestContext(request))
+    billlist = Billinfo.objects.filter(user=request.user).order_by('id')
+    return render_to_response("billinfo.html", RequestContext(request,{
+                                                'billform': billform,
+                                                'id': billid,
+                                                'infomsg':u'操作成功',
+                                                "billinfo_list": billlist})
+                                  )
+
+#===============================================================================
+# 账单还款的修改，添加操作在这个类里面全部完成
+#===============================================================================
+@login_required
+def billpay(request,bpid=None):
+#     billform = BillForm(Billinfo())
+    form = BillpayForm(None,request.user)
+    if request.method == 'POST':
+        form = BillpayForm(None,request.user,request.POST)
+        if form.is_valid():
+            #try:
+            new_Bill = form.save(request,None,bpid)
+            #except:
+            #    raise Http404
+    elif request.method == 'GET':
+        try:
+            if bpid:
+                rtn_record = Trancations.objects.get(id=bpid)
+                billform = BillForm(rtn_record)
+                billid = rtn_record.id
+        except Trancations.DoesNotExist:
+            return render_to_response("success.html",({'errormsg':u'不存在这条记录'}), RequestContext(request))
+    billpaylist = Trancations.objects.filter(user=request.user).order_by('id')
+    return render_to_response("billpay.html", RequestContext(request,{
+                                                'form': form,
+                                                'id': billid,
+                                                'infomsg':u'操作成功',
+                                                "billpay_list": billpaylist})
+                                  )

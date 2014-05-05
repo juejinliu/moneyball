@@ -32,8 +32,8 @@ TEMPLATE_DIRS = (
 SECRET_KEY = 'xtdkofon6-u4rvx^+u)g^1**dg853yvzciea4b=r535_-j0=te'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# print socket.gethostname()
-if socket.gethostname() == 'CHANGSHU2' or socket.gethostname() == 'shuangshandeMacBook-Pro.local':
+# print socket.gethostname().startswith('CHANGSHU')
+if socket.gethostname().startswith('CHANGSHU') or socket.gethostname() == 'shuangshandeMacBook-Pro.local':
     DEBUG = TEMPLATE_DEBUG = True
 else:
     DEBUG = TEMPLATE_DEBUG = False
@@ -90,6 +90,7 @@ INSTALLED_APPS = (
     'moneyball.loan',
     'moneyball.wx',
     'moneyball.accounts',
+    'moneyball.creditcard',
 )
 
 MIDDLEWARE_CLASSES = (
