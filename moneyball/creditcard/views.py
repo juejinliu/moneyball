@@ -7,7 +7,7 @@ from django.template import RequestContext
 from moneyball.creditcard.forms import *
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
-from moneyball.creditcard.models import *
+# from moneyball.creditcard.models import *
 from moneyball.accounts.models import *
 # from graphos.sources.model import ModelDataSource
 # from graphos.renderers import flot
@@ -79,7 +79,7 @@ def billinfo(request,biid=None,status=None):
                     rtn_record.status = status_record
                     rtn_record.save()
                 else:
-                    billform = BillForm(rtn_record)
+                    billform = BillForm(rtn_record,request.user)
                     billid = rtn_record.id
         except Billinfo.DoesNotExist:
             return render_to_response("success.html",({'errormsg':u'不存在这条记录'}), RequestContext(request))
@@ -96,27 +96,27 @@ def billinfo(request,biid=None,status=None):
 #===============================================================================
 @login_required
 def billpay(request,bpid=None):
-#     billform = BillForm(Billinfo())
     form = BillpayForm(None,request.user)
     if request.method == 'POST':
         form = BillpayForm(None,request.user,request.POST)
         if form.is_valid():
             #try:
-            new_Bill = form.save(request,None,bpid)
+            new_Billpay = form.save(request,None,bpid)
             #except:
             #    raise Http404
     elif request.method == 'GET':
         try:
             if bpid:
                 rtn_record = Trancations.objects.get(id=bpid)
-                billform = BillForm(rtn_record)
-                billid = rtn_record.id
+                form = BillpayForm(rtn_record,request.user)
+                bpid = rtn_record.id
         except Trancations.DoesNotExist:
             return render_to_response("success.html",({'errormsg':u'不存在这条记录'}), RequestContext(request))
-    billpaylist = Trancations.objects.filter(user=request.user).order_by('id')
+    bptrancode = Usertranscode.objects.get(user=request.user,type=5)
+    billpaylist = Trancations.objects.filter(user=request.user,transcode=bptrancode).order_by('id')
     return render_to_response("billpay.html", RequestContext(request,{
                                                 'form': form,
-                                                'id': billid,
+                                                'id': bpid,
                                                 'infomsg':u'操作成功',
-                                                "billpay_list": billpaylist})
+                                                "billpaylist": billpaylist})
                                   )
